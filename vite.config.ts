@@ -4,12 +4,13 @@ import path from "node:path";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  // Prioritize process.env for CLI overrides
-  const rawBase = process.env.VITE_BASE?.trim() || env.VITE_BASE?.trim();
-  const base =
-    rawBase && rawBase !== "/"
-      ? rawBase.endsWith("/") ? rawBase : `${rawBase}/`
-      : "/";
+  
+  // Если собираем для продакшена и не задали базу вручную, 
+  // используем имя репозитория для GitHub Pages
+  const rawBase = process.env.VITE_BASE || env.VITE_BASE || (mode === 'production' ? '/AdvancedGUI-CE/' : '/');
+  
+  const base = rawBase.startsWith('/') ? rawBase : `/${rawBase}`;
+  const finalBase = base.endsWith('/') ? base : `${base}/`;
 
   return {
     base,
