@@ -1,0 +1,820 @@
+@use "sass:color";
+@use "@/scss/_variables.scss" as *;
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
+
+:root {
+  --bg: #0f141c;
+  --surface: #141a23;
+  --surface-2: #1a212b;
+  --border: #2a3340;
+  --text: #f2f5f8;
+  --muted: #8c97a6;
+  --accent: #4cc3ff;
+  --success: #38d97e;
+  --danger: #ff6b6b;
+  --layout-gap: 16px;
+  --layout-gap-sm: 12px;
+  --panel-radius: 16px;
+  --panel-border: 1px solid rgba(138, 148, 163, 0.2);
+}
+
+body {
+  background:
+    radial-gradient(
+      1200px 700px at 15% -10%,
+      rgba(76, 195, 255, 0.12),
+      rgba(20, 26, 35, 0) 60%
+    ),
+    radial-gradient(
+      900px 500px at 100% 10%,
+      rgba(56, 217, 126, 0.08),
+      rgba(20, 26, 35, 0) 60%
+    ),
+    $dark2;
+  color: var(--text);
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  font-family: "Nunito", sans-serif;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+input[type="radio"] {
+  cursor: pointer;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  border: 1px solid $light4;
+  background-color: transparent;
+  margin-right: 0.5rem;
+
+  &:checked {
+    background-color: $light2;
+    border: 3px solid $light4;
+  }
+}
+
+.spin {
+  animation-name: spin;
+  animation-duration: 1.2s;
+  animation-iteration-count: infinite;
+  cursor: default;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseBorder {
+  0% {
+    border-width: 1px;
+  }
+
+  50% {
+    border-width: 4px;
+  }
+
+  100% {
+    border-width: 1px;
+  }
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row {
+  display: flex;
+}
+
+.label {
+  color: $light3;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+a {
+  color: $blue;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn {
+  display: flex;
+  padding: 5px 15px;
+  align-items: center;
+  gap: 6px;
+  height: fit-content;
+  width: fit-content;
+  cursor: pointer;
+  user-select: none;
+
+  border-radius: 10px;
+  background-color: $dark3;
+  border: 1px solid rgba(138, 148, 163, 0.18);
+  color: $light2;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+
+  &:hover {
+    background-color: $dark2;
+    border-color: rgba(138, 148, 163, 0.35);
+    box-shadow: $shadow;
+  }
+
+  .material-icons {
+    font-size: 20px;
+    margin-left: -2px;
+    margin-right: 0;
+  }
+
+  .text {
+    // text-transform: uppercase;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.btn.fillCanvas {
+  background: linear-gradient(
+    135deg,
+    rgba(76, 195, 255, 0.2),
+    rgba(56, 217, 126, 0.15)
+  );
+  border-color: rgba(76, 195, 255, 0.45);
+  color: $light;
+}
+
+.red-text {
+  color: $red !important;
+}
+
+.absoluteMenu {
+  z-index: 50;
+  position: fixed;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 33, 43, 0.96),
+    rgba(20, 26, 35, 0.96)
+  );
+  color: $light2;
+  border-radius: var(--panel-radius);
+  display: none;
+  box-shadow: $shadowStrong;
+  border: 1px solid rgba(138, 148, 163, 0.2);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  transition-duration: 150ms;
+  transition-property: opacity;
+
+  @media screen and (max-height: 1080px) {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background-color: $dark1;
+
+    &.lighter {
+      background-color: $light3;
+    }
+  }
+
+  .entry {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    padding: 7px 15px 7px 10px;
+    cursor: pointer;
+    gap: 8px;
+
+    &:hover {
+      background-color: $dark1;
+      color: $light;
+    }
+
+    .material-icons {
+      font-size: 15px;
+      margin-right: 0;
+    }
+  }
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: var(--layout-gap-sm);
+    padding: 10px 14px;
+    margin: var(--layout-gap) auto 0;
+    width: min(1240px, calc(100% - var(--layout-gap) * 2));
+    background: linear-gradient(90deg, $dark3, rgba(26, 33, 43, 0.85));
+    z-index: 3;
+    border-radius: var(--panel-radius);
+    border: var(--panel-border);
+    box-shadow: $shadowStrong;
+    backdrop-filter: blur(8px);
+    animation: fadeUp 220ms ease;
+    box-sizing: border-box;
+
+    .label {
+      color: $light4;
+      font-weight: 700;
+    }
+
+    .headLeft,
+    .headRight {
+      display: flex;
+      align-items: center;
+      gap: var(--layout-gap-sm);
+      flex-shrink: 0;
+    }
+
+    .center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .inputProjectName {
+      background-color: unset;
+      padding: 4px 8px;
+      border-radius: 0;
+      width: 140px;
+      color: $light3;
+      font-weight: 400;
+      font-size: 18px;
+      border: none;
+      text-align: right;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    .size {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+
+      input {
+        background-color: transparent;
+        border: none;
+        width: 20px;
+        text-align: center;
+        color: $light3;
+        font-size: 17px;
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* Firefox */
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+    }
+
+    .sync {
+      border: 1px solid $light3;
+      color: $light3;
+      position: relative;
+
+      &:hover {
+        color: $blue;
+        border-color: $blue;
+      }
+    }
+
+    .export {
+      background-color: $green;
+      color: $dark1;
+    }
+
+    .save {
+      border: 1px solid $green;
+      color: $green;
+
+      &.inactive {
+        border-color: $light3;
+        color: $light3;
+      }
+    }
+  }
+
+  .mainSpace {
+    margin: var(--layout-gap) 0 0;
+    padding: 0 var(--layout-gap) var(--layout-gap);
+    gap: var(--layout-gap);
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+  }
+
+  #compTree {
+    width: clamp(240px, 18vw, 320px);
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--layout-gap);
+    padding: var(--layout-gap);
+    border: var(--panel-border);
+    border-radius: var(--panel-radius);
+    box-shadow: $shadow;
+    box-sizing: border-box;
+
+    .actualTree {
+      margin: 0;
+      padding: 0;
+      flex: 1;
+      overflow-y: auto;
+      box-sizing: border-box;
+      background-color: transparent;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+      animation: fadeUp 220ms ease;
+    }
+
+    .addComponentBtn {
+      margin-top: auto;
+      align-self: stretch;
+      justify-content: flex-start;
+      padding: 6px 12px 6px 10px;
+      margin: 0 6px;
+    }
+  }
+
+  #settings {
+    width: clamp(280px, 22vw, 360px);
+    overflow-y: auto;
+    background-color: transparent;
+    border: var(--panel-border);
+    border-radius: var(--panel-radius);
+    box-shadow: $shadow;
+    padding: var(--layout-gap);
+    box-sizing: border-box;
+
+    .settings-box {
+      padding: 14px;
+      margin: 0;
+      background-color: transparent;
+      border-radius: var(--panel-radius);
+      border: none;
+      box-shadow: none;
+      animation: fadeUp 220ms ease;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background-color: rgba(138, 148, 163, 0.18);
+      margin: var(--layout-gap) 0;
+    }
+
+    h1,
+    h2 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      margin: var(--layout-gap) 0;
+      font-weight: 400;
+      font-size: 24px;
+
+      color: $light2;
+
+      .material-icons {
+        color: $light3;
+        font-size: 20px;
+        margin-right: 15px;
+      }
+    }
+
+    .label.heading {
+      margin-top: var(--layout-gap-sm);
+    }
+
+    h2 {
+      font-size: 20px;
+
+      .material-icons {
+        font-size: 18px;
+        margin-right: 10px;
+      }
+    }
+
+    h3 {
+      color: $light3;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: var(--layout-gap);
+    }
+
+    .settings-row {
+      margin: var(--layout-gap-sm) 0 0;
+      display: flex;
+      align-items: center;
+      width: 100%;
+
+      &.disribute {
+        justify-content: space-between;
+      }
+    }
+
+    input,
+    textarea,
+    select {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: $inputBorder;
+      border-radius: 5px;
+      color: $light2;
+      padding: 5px 10px;
+      margin-left: 10px;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease;
+
+      option {
+        color: $light4;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: rgba(76, 195, 255, 0.45);
+        background-color: rgba(255, 255, 255, 0.06);
+      }
+    }
+
+    input[type="color"] {
+      padding: 0px;
+    }
+
+    .input-box {
+      width: fit-content;
+      border: $inputBorder;
+      border-radius: 5px;
+      color: $light2;
+      background-color: rgba(255, 255, 255, 0.03);
+      padding: 5px 10px;
+      margin-right: 15px;
+
+      display: flex;
+      align-items: center;
+
+      span {
+        padding-left: 10px;
+        min-width: 20px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      input,
+      select {
+        background-color: transparent;
+        border: none;
+        padding: 0 10px 0 0;
+        width: 40px;
+        text-align: right;
+        font-size: 15px;
+        border-radius: 0;
+        border-right: 1.2px solid $light3;
+        color: $light2;
+
+        option {
+          background-color: $dark2;
+          color: $light2;
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+
+    .clickActions {
+      .addAction {
+        margin: 0 auto var(--layout-gap-sm);
+        background-color: transparent;
+        border: 1px solid $light2;
+        color: $light2;
+      }
+
+      #actionEditor {
+        // border: 2px solid $dark2;
+        box-shadow: $shadowStrong;
+        margin: var(--layout-gap) 0 0;
+        padding: 14px;
+
+        h2 {
+          margin-top: 0;
+          margin-bottom: 10px;
+          justify-content: start;
+        }
+      }
+    }
+
+    p {
+      color: $light2;
+      margin-top: var(--layout-gap-sm);
+    }
+
+    .gen-box {
+      .label {
+        min-width: 70px;
+      }
+
+      .id-box {
+        input {
+          width: 100px;
+          text-align: center;
+          color: $light3;
+          // border-color: $dark3;
+        }
+
+        .material-icons {
+          font-size: 20px;
+          color: $light3;
+          cursor: pointer;
+          margin-left: 7px;
+
+          &:hover {
+            color: $light2;
+          }
+        }
+      }
+    }
+
+    .alignBlock {
+      margin-top: var(--layout-gap-sm);
+      padding-top: var(--layout-gap-sm);
+      border-top: 1px dashed rgba(138, 148, 163, 0.22);
+    }
+
+    .alignRow {
+      align-items: center;
+    }
+
+    .alignScope {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+    }
+
+    .alignScopeBtn {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(138, 148, 163, 0.35);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      color: $light3;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease,
+        color 120ms ease,
+        transform 120ms ease;
+
+      &:hover {
+        color: $light2;
+        border-color: rgba(76, 195, 255, 0.45);
+      }
+
+      &.active {
+        background-color: rgba(76, 195, 255, 0.16);
+        border-color: rgba(76, 195, 255, 0.6);
+        color: $light2;
+      }
+
+      &.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+    }
+
+    .alignButtons {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+
+      .material-icons {
+        font-size: 20px;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(138, 148, 163, 0.35);
+        color: $light3;
+        cursor: pointer;
+        transition:
+          border-color 120ms ease,
+          background-color 120ms ease,
+          color 120ms ease,
+          transform 120ms ease;
+
+        &:hover {
+          color: $light2;
+          border-color: rgba(76, 195, 255, 0.45);
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        &:active {
+          transform: translateY(1px);
+        }
+      }
+    }
+  }
+
+  .canvasContainer {
+    flex-grow: 1;
+    overflow: auto;
+    position: relative;
+    background-color: $dark1;
+    background-image: radial-gradient(
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    );
+    background-size: 18px 18px;
+    border: var(--panel-border);
+    border-radius: var(--panel-radius);
+    box-shadow: $shadow;
+    box-sizing: border-box;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-corner {
+      background: color.adjust($light4, $alpha: -0.2);
+    }
+    &::-webkit-scrollbar-thumb {
+      background: color.adjust($light4, $alpha: -0.2);
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: $light4;
+    }
+
+    #canvasPadding {
+      margin: auto;
+      padding: 40px;
+      width: fit-content;
+
+      #canvas {
+        display: block;
+        border: 1px solid rgba(138, 148, 163, 0.4);
+        box-shadow: $shadowStrong;
+        background-color: #000;
+        height: fit-content;
+        image-rendering: pixelated;
+        border-radius: 6px;
+      }
+    }
+
+    .toolbar {
+      position: fixed;
+      bottom: 2rem;
+      width: 20rem;
+      height: 3rem;
+      background-color: rgba(26, 33, 43, 0.95);
+      left: calc(50% - 10rem);
+      border-radius: var(--panel-radius);
+      border: var(--panel-border);
+      box-shadow: $shadowStrong;
+      backdrop-filter: blur(8px);
+
+      display: flex;
+      align-items: center;
+
+      .zoom {
+        margin-right: auto;
+        margin-left: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        select {
+          background-color: transparent;
+          width: 65px;
+          color: $light2;
+          border: none;
+          padding: 4px 2px;
+
+          &:hover {
+            background-color: $light4;
+          }
+
+          &:focus {
+            outline: none;
+          }
+
+          option {
+            background-color: $dark1;
+          }
+        }
+
+        .snapToggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 26px;
+          width: 26px;
+          border-radius: 8px;
+          border: 1px solid rgba(138, 148, 163, 0.3);
+          color: $light3;
+          cursor: pointer;
+          transition:
+            background-color 120ms ease,
+            color 120ms ease,
+            border-color 120ms ease;
+
+          .material-icons {
+            font-size: 16px;
+          }
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+          }
+
+          &.active {
+            color: $light2;
+            border-color: rgba(76, 195, 255, 0.55);
+            background-color: rgba(76, 195, 255, 0.12);
+          }
+        }
+      }
+
+      .historyControls {
+        .btnHstr {
+          box-sizing: content-box;
+          border-left: 1px solid rgba(138, 148, 163, 0.3);
+          color: $light2;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 3rem;
+          width: 3rem;
+          cursor: pointer;
+          user-select: none;
+          transition:
+            background-color 120ms ease,
+            color 120ms ease;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+          }
+
+          &.inactive {
+            color: $light4;
+            cursor: not-allowed;
+
+            &:hover {
+              background-color: unset;
+            }
+          }
+        }
+      }
+    }
+  }
+}
