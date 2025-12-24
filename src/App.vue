@@ -28,6 +28,23 @@
         id="broken_TAKEN_ID"
       />
     </div>
+
+    <!-- Mobile Warning Modal -->
+    <div v-if="showMobileWarning" class="mobile-warning-overlay">
+      <div class="mobile-warning-modal">
+        <h3>Неподдерживаемое устройство</h3>
+        <p>
+          Похоже, вы используете мобильное устройство. <br />
+          Редактор не оптимизирован для сенсорных экранов и маленьких разрешений.
+        </p>
+        <p class="warning-text">
+          Вы можете продолжить, но мы не гарантируем корректную работу.
+        </p>
+        <button class="proceed-btn" @click="dismissMobileWarning">
+          Продолжить на свой страх и риск
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -77,10 +94,12 @@ export default defineComponent({
       beforeUnloadHandler: null as
         | ((e: BeforeUnloadEvent) => string | undefined)
         | null,
+      showMobileWarning: false,
     };
   },
 
   async mounted() {
+    this.checkMobile();
     setupImageManager(this.$refs.imageContainer as HTMLElement);
     initializeShortcutHandler();
     loading(true);
@@ -113,6 +132,22 @@ export default defineComponent({
   },
 
   methods: {
+    checkMobile() {
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        ) || window.innerWidth <= 800;
+
+      const dismissed = sessionStorage.getItem("mobileWarningDismissed");
+
+      if (isMobile && !dismissed) {
+        this.showMobileWarning = true;
+      }
+    },
+    dismissMobileWarning() {
+      this.showMobileWarning = false;
+      sessionStorage.setItem("mobileWarningDismissed", "true");
+    },
     blurActiveElement(ev: MouseEvent) {
       const target = ev.target as HTMLElement | null;
       if (
@@ -139,4 +174,61 @@ export default defineComponent({
 
 <style lang="scss">
 @use "@/scss/app.scss";
+
+.mobile-warning-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.mobile-warning-modal {
+  background: #2c3e50;
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+  h3 {
+    margin-top: 0;
+    color: #e74c3c;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    color: #ecf0f1;
+  }
+
+  .warning-text {
+    font-weight: bold;
+    color: #f39c12;
+  }
+
+  .proceed-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+    margin-top: 1rem;
+
+    &:hover {
+      background: #c0392b;
+    }
+  }
+}
 </style>
