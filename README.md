@@ -5,6 +5,8 @@
 **Визуальный веб‑редактор GUI для AdvancedGUI (Minecraft)**  
 Собирайте меню на холсте, настраивайте действия/проверки и экспортируйте проекты в JSON.
 
+[**Попробовать онлайн**](https://gitkbdl.github.io/AdvancedGUI-CE/)
+
 [![Vue](https://img.shields.io/badge/Vue-3.x-42b883?logo=vue.js&logoColor=white)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
