@@ -152,7 +152,7 @@
         </div>
       </div>
       <div class="projectList">
-        <div class="card createNew" @click="openNewProject">
+        <div v-if="projects.length > 0" class="card createNew" @click="openNewProject">
           <span class="material-icons">add</span>
           <span>{{ t("projectExplorer.create", "Create new project") }}</span>
         </div>
@@ -195,33 +195,28 @@
           ></absolute-menu>
         </div>
       </div>
-      <div v-if="filteredProjects.length === 0" class="emptyState">
+      <div v-if="projects.length === 0" class="emptyState">
         <span class="material-icons">search_off</span>
         <div class="emptyTitle">
-          {{
-            projects.length
-              ? t("projectExplorer.empty.title", "No projects found")
-              : t("projectExplorer.empty.firstTitle", "No projects yet")
-          }}
+          {{ t("projectExplorer.empty.firstTitle", "No projects yet") }}
         </div>
         <div class="emptyBody">
-          {{
-            projects.length
-              ? t(
-                  "projectExplorer.empty.body",
-                  "Try another name or create a new project.",
-                )
-              : t(
-                  "projectExplorer.empty.firstBody",
-                  "Start fresh by creating your first project.",
-                )
-          }}
+          {{ t("projectExplorer.empty.firstBody", "Start fresh by creating your first project.") }}
         </div>
         <div class="btn heroPrimary" @click="openNewProject">
           <span class="material-icons">add</span>
           <span class="text">{{
             t("projectExplorer.create", "Create new project")
           }}</span>
+        </div>
+      </div>
+      <div v-else-if="filteredProjects.length === 0" class="emptyState">
+        <span class="material-icons">search_off</span>
+        <div class="emptyTitle">
+          {{ t("projectExplorer.empty.title", "No projects found") }}
+        </div>
+        <div class="emptyBody">
+          {{ t("projectExplorer.empty.body", "Try another name.") }}
         </div>
       </div>
     </div>
