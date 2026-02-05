@@ -44,11 +44,14 @@ let imageContainer: HTMLElement;
 const baseUrl = import.meta.env.BASE_URL;
 
 export async function unregisterImage(imageName: string) {
-  const elem = images[imageName].data;
+  const image = images[imageName];
+  if (!image) return;
+  const elem = image.data;
 
   delete images[imageName];
-  regImages.splice(regImages.indexOf(imageName), 1);
-  elem.remove();
+  const index = regImages.indexOf(imageName);
+  if (index !== -1) regImages.splice(index, 1);
+  if (elem?.parentElement) elem.remove();
 }
 
 export async function registerImageBase64(
@@ -142,9 +145,17 @@ export function setupImageManager(hiddenImageContainer: HTMLElement) {
   imageContainer = hiddenImageContainer;
   for (const name of DEFAULT_IMAGE_FILES) {
     fetch(`${baseUrl}images/${name}`)
-      .then((resp) => resp.blob())
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error(`Failed to load default image ${name}`);
+        }
+        return resp.blob();
+      })
       .then((blob) =>
         registerImage(blob, name.substr(0, name.length - 4), false),
-      );
+      )
+      .catch((err) => {
+        console.warn(err);
+      });
   }
 }

@@ -15,6 +15,21 @@ export const history = reactive({
 
 export const unsavedChange = ref(false);
 const MAX_HISTORY = 50;
+const HISTORY_UPDATE_DEBOUNCE = 150;
+let updateTimer: number | null = null;
+
+export function scheduleHistoryUpdate(delay = HISTORY_UPDATE_DEBOUNCE) {
+  if (history.pauseHistoryTracking) return;
+
+  if (updateTimer !== null) {
+    window.clearTimeout(updateTimer);
+  }
+
+  updateTimer = window.setTimeout(() => {
+    updateTimer = null;
+    updateHistory();
+  }, delay);
+}
 
 export async function redo() {
   if (history.historyIndex == 0) return;

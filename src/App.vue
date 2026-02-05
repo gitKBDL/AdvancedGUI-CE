@@ -4,7 +4,7 @@
       <app-header />
       <div
         class="row mainSpace"
-        @click.capture="updateHistory"
+        @click.capture="scheduleHistoryUpdate"
         @mousedown.capture="blurActiveElement"
       >
         <component-tree />
@@ -32,16 +32,19 @@
     <!-- Mobile Warning Modal -->
     <div v-if="showMobileWarning" class="mobile-warning-overlay">
       <div class="mobile-warning-modal">
-        <h3>Неподдерживаемое устройство</h3>
+        <h3>
+          {{ t("app.mobileWarning.title", "Unsupported device") }}
+        </h3>
         <p>
-          Похоже, вы используете мобильное устройство. <br />
-          Редактор не оптимизирован для сенсорных экранов и маленьких разрешений.
+          {{ t("app.mobileWarning.bodyLine1", "It looks like you're using a mobile device.") }}
+          <br />
+          {{ t("app.mobileWarning.bodyLine2", "The editor is not optimized for touch screens and small resolutions.") }}
         </p>
         <p class="warning-text">
-          Вы можете продолжить, но мы не гарантируем корректную работу.
+          {{ t("app.mobileWarning.note", "You can continue, but we can’t guarantee correct behavior.") }}
         </p>
         <button class="proceed-btn" @click="dismissMobileWarning">
-          Продолжить на свой страх и риск
+          {{ t("app.mobileWarning.cta", "Continue at your own risk") }}
         </button>
       </div>
     </div>
@@ -68,7 +71,10 @@ import Toolbar from "./components/Toolbar.vue";
 import { loading, selection } from "./utils/manager/WorkspaceManager";
 import { vueRef } from "./utils/VueRef";
 import ProjectExplorer from "./components/ProjectExplorer.vue";
-import { unsavedChange, updateHistory } from "./utils/manager/HistoryManager";
+import {
+  unsavedChange,
+  scheduleHistoryUpdate,
+} from "./utils/manager/HistoryManager";
 import { t } from "./utils/i18n";
 
 const baseUrl = import.meta.env.BASE_URL;
@@ -89,12 +95,13 @@ export default defineComponent({
     return {
       baseUrl,
       projectExplorerOpen: vueRef(projectExplorerOpen),
-      updateHistory,
+      scheduleHistoryUpdate,
       selection: vueRef(selection),
       beforeUnloadHandler: null as
         | ((e: BeforeUnloadEvent) => string | undefined)
         | null,
       showMobileWarning: false,
+      t,
     };
   },
 

@@ -7,7 +7,15 @@ const stored: Language = saved === "en" || saved === "ru" ? saved : "ru";
 export const language = ref<Language>(stored);
 
 const translations: Record<Language, Record<string, string>> = {
-  en: {},
+  en: {
+    "app.mobileWarning.title": "Unsupported device",
+    "app.mobileWarning.bodyLine1": "It looks like you're using a mobile device.",
+    "app.mobileWarning.bodyLine2":
+      "The editor is not optimized for touch screens and small resolutions.",
+    "app.mobileWarning.note":
+      "You can continue, but we can’t guarantee correct behavior.",
+    "app.mobileWarning.cta": "Continue at your own risk",
+  },
   ru: {
     "header.shortcuts": "Горячие клавиши",
     "header.sizeFrames": "кадров",
@@ -27,6 +35,14 @@ const translations: Record<Language, Record<string, string>> = {
     "header.backToProjects": "К проектам",
     "app.unsavedLeave":
       "Похоже, вы редактируете проект. Если уйти, не сохранив изменения, данные будут потеряны.",
+    "app.mobileWarning.title": "Неподдерживаемое устройство",
+    "app.mobileWarning.bodyLine1":
+      "Похоже, вы используете мобильное устройство.",
+    "app.mobileWarning.bodyLine2":
+      "Редактор не оптимизирован для сенсорных экранов и маленьких разрешений.",
+    "app.mobileWarning.note":
+      "Вы можете продолжить, но мы не гарантируем корректную работу.",
+    "app.mobileWarning.cta": "Продолжить на свой страх и риск",
 
     "shortcuts.copy": "Копировать компонент",
     "shortcuts.paste": "Вставить компонент",

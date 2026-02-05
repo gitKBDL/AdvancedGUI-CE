@@ -10,7 +10,7 @@ import { Project } from "../Project";
 import { clearHistory, unsavedChange } from "./HistoryManager";
 import { settings } from "./SettingsManager";
 import { migrate, VERSION } from "./UpdateManager";
-import { error, info } from "./WorkspaceManager";
+import { error, info, loading } from "./WorkspaceManager";
 import { t } from "../i18n";
 import { ensureUniqueProjectName, normalizeProjectName } from "../ProjectName";
 
@@ -159,7 +159,12 @@ export async function importProject(data: Project) {
     );
 
     lastOpendProjectName = data.name;
-    loadProjectFromJson(data, false);
+    loading(true);
+    try {
+      await loadProjectFromJson(data, false);
+    } finally {
+      loading(false);
+    }
 
     projects.value.splice(0, 0, data);
     await localforage.setItem(`project/${data.name}`, JSON.stringify(data));
@@ -222,7 +227,7 @@ function migrateAndPersistProject(project: Project) {
   return project;
 }
 
-export function openProject(project: Project) {
+export async function openProject(project: Project) {
   lastOpendProjectName = project.name;
 
   project = migrateAndPersistProject(project);
@@ -230,8 +235,13 @@ export function openProject(project: Project) {
   clearHistory();
   unsavedChange.value = false;
 
-  loadProjectFromJson(project, false);
-  projectExplorerOpen.value = false;
+  loading(true);
+  try {
+    await loadProjectFromJson(project, false);
+    projectExplorerOpen.value = false;
+  } finally {
+    loading(false);
+  }
 }
 
 export async function openNewProject() {
@@ -261,7 +271,7 @@ export async function openNewProject() {
     },
   };
 
-  openProject(newProject);
+  await openProject(newProject);
   projects.value.splice(0, 0, newProject);
   await saveCurrentProject();
 

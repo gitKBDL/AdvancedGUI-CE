@@ -59,6 +59,7 @@ export default defineComponent({
         component: Component;
         duplicateOnMove: boolean;
         duplicated: boolean;
+        hasModified: boolean;
       },
 
       invisibleIDs: vueRef(invisibleIDs),
@@ -435,6 +436,7 @@ export default defineComponent({
             component: selectedComponent,
             duplicateOnMove: event.altKey,
             duplicated: false,
+            hasModified: false,
           };
 
           if (modifierIcon !== "move") {
@@ -471,7 +473,8 @@ export default defineComponent({
       }
 
       this.redraw();
-      updateHistory();
+      const shouldUpdateHistory = this.modifying?.hasModified;
+      if (shouldUpdateHistory) updateHistory();
 
       if (this.modifying) {
         this.modifying.component.endResize();
@@ -550,6 +553,18 @@ export default defineComponent({
         } else {
           this.clearGuides();
           newBounds.ensureBounds(this.width, this.height);
+        }
+
+        if (!this.modifying.hasModified) {
+          const start = this.modifying.elementStartPosition;
+          if (
+            newBounds.x !== start.x ||
+            newBounds.y !== start.y ||
+            newBounds.width !== start.width ||
+            newBounds.height !== start.height
+          ) {
+            this.modifying.hasModified = true;
+          }
         }
 
         this.modifying.component.modify(newBounds, this.modifying.singleAxis);
