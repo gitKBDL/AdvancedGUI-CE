@@ -66,6 +66,7 @@ import {
 import {
   loadProjects,
   projectExplorerOpen,
+  saveCurrentProject,
 } from "./utils/manager/ProjectManager";
 import Toolbar from "./components/Toolbar.vue";
 import { loading, selection } from "./utils/manager/WorkspaceManager";
@@ -102,6 +103,8 @@ export default defineComponent({
         | null,
       showMobileWarning: false,
       t,
+      autoSaveTimer: null as number | null,
+      autoSaveInProgress: false,
     };
   },
 
@@ -112,6 +115,7 @@ export default defineComponent({
     loading(true);
     await loadProjects();
     loading(false);
+    this.startAutoSave();
 
     this.beforeUnloadHandler = (e: BeforeUnloadEvent) => {
       if (!unsavedChange.value || projectExplorerOpen.value) {
@@ -132,6 +136,7 @@ export default defineComponent({
 
   unmounted() {
     shutdownShortcutHandler();
+    this.stopAutoSave();
     if (this.beforeUnloadHandler) {
       window.removeEventListener("beforeunload", this.beforeUnloadHandler);
       this.beforeUnloadHandler = null;
@@ -139,6 +144,27 @@ export default defineComponent({
   },
 
   methods: {
+    startAutoSave() {
+      if (this.autoSaveTimer !== null) return;
+      this.autoSaveTimer = window.setInterval(this.tryAutoSave, 20000);
+    },
+    stopAutoSave() {
+      if (this.autoSaveTimer === null) return;
+      window.clearInterval(this.autoSaveTimer);
+      this.autoSaveTimer = null;
+    },
+    async tryAutoSave() {
+      if (this.autoSaveInProgress) return;
+      if (projectExplorerOpen.value) return;
+      if (!unsavedChange.value) return;
+
+      this.autoSaveInProgress = true;
+      try {
+        await saveCurrentProject();
+      } finally {
+        this.autoSaveInProgress = false;
+      }
+    },
     checkMobile() {
       const isMobile =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(

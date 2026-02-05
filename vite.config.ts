@@ -5,11 +5,13 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  
+
   const rawBase = process.env.VITE_BASE || env.VITE_BASE || (mode === 'production' ? '/AdvancedGUI-CE/' : '/');
   
   const base = rawBase.startsWith('/') ? rawBase : `/${rawBase}`;
   const finalBase = base.endsWith('/') ? base : `${base}/`;
+  const isCi = process.env.CI === "true";
+  const workboxMode = isCi ? "production" : "development";
 
   return {
     base: finalBase,
@@ -17,6 +19,9 @@ export default defineConfig(({ mode }) => {
       vue(),
       VitePWA({
         registerType: "autoUpdate",
+        workbox: {
+          mode: workboxMode,
+        },
         manifest: {
           name: "AdvancedGUI Community Editor",
           short_name: "AGUI Editor",
