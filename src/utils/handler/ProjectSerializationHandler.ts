@@ -179,13 +179,14 @@ export async function downloadProjectFile(savepoint: Project) {
         },
       } as Project),
     );
-    loading(false);
   } catch (exc) {
     const errorText = t(
       "export.error",
       "Error during export: {message}",
     ).replace("{message}", `${(exc as Error)?.message || exc}`);
     error(errorText);
+  } finally {
+    loading(false);
   }
 }
 
@@ -227,6 +228,7 @@ export function importComponentFomJson(componentProject: Project) {
         "You can only import layout files as a component if they contain exactly one group or template component.",
       ),
     );
+    return;
   }
 
   pauseRendering.value = true;

@@ -30,19 +30,66 @@ async function updateProjectNames() {
 export async function loadProjects() {
   projects.value = [];
 
-  const projectNames = JSON.parse(
-    (await localforage.getItem("projectNames")) || "[]",
-  ) as string[];
+  const storedNames = await localforage.getItem("projectNames");
+  let projectNames: string[] = [];
+  if (typeof storedNames === "string") {
+    try {
+      const parsed = JSON.parse(storedNames);
+      if (Array.isArray(parsed)) projectNames = parsed as string[];
+    } catch {
+      projectNames = [];
+    }
+  } else if (Array.isArray(storedNames)) {
+    projectNames = storedNames as string[];
+  }
+
+  const seen = new Set<string>();
+  const validNames: string[] = [];
 
   for (const name of projectNames) {
-    projects.value.push(
-      JSON.parse((await localforage.getItem(`project/${name}`))! as string),
-    );
+    if (typeof name !== "string" || !name) continue;
+    if (seen.has(name)) continue;
+    seen.add(name);
+
+    const storedProject = await localforage.getItem(`project/${name}`);
+    let project: Project | null = null;
+
+    if (typeof storedProject === "string") {
+      try {
+        project = JSON.parse(storedProject) as Project;
+      } catch {
+        project = null;
+      }
+    } else if (storedProject && typeof storedProject === "object") {
+      project = storedProject as Project;
+    }
+
+    if (!project || typeof project.name !== "string") {
+      await localforage.removeItem(`project/${name}`);
+      await localforage.removeItem(`thumbnail/${name}`);
+      continue;
+    }
+
+    if (project.name !== name) {
+      project.name = name;
+    }
+
+    projects.value.push(project);
+    validNames.push(name);
+  }
+
+  if (
+    validNames.length !== projectNames.length ||
+    validNames.some((name, index) => name !== projectNames[index])
+  ) {
+    await localforage.setItem("projectNames", JSON.stringify(validNames));
   }
 }
 
 export function exportProject(name: string) {
-  downloadProjectFile(projects.value.find((p) => p.name == name)!);
+  const project = projects.value.find((p) => p.name == name);
+  if (!project) return;
+  downloadProjectFile(project);
 }
 
 export function exportCurrentProject() {
@@ -78,14 +125,18 @@ export async function saveCurrentProject() {
     lastOpendProjectName = savepoint.name;
   }
 
-  projects.value.splice(index, 1, savepoint);
+  if (index === -1) {
+    projects.value.splice(0, 0, savepoint);
+  } else {
+    projects.value.splice(index, 1, savepoint);
+  }
 
   await localforage.setItem(
     `project/${savepoint.name}`,
     JSON.stringify(savepoint),
   );
 
-  if (nameChange) await updateProjectNames();
+  if (nameChange || index === -1) await updateProjectNames();
 
   unsavedChange.value = false;
 }
