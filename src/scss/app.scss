@@ -1,6 +1,5 @@
 @use "sass:color";
 @use "@/scss/_variables.scss" as *;
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
 
 :root {
   --bg: #0f141c;
@@ -379,7 +378,8 @@ a {
       align-self: stretch;
       justify-content: flex-start;
       padding: 6px 12px 6px 10px;
-      margin: 0 6px;
+      margin-right: 6px;
+      margin-left: 6px;
     }
   }
 

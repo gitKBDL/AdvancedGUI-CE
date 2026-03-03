@@ -367,86 +367,111 @@ export default defineComponent({
       return duplicate;
     },
 
+    markMouseDownOnCurrentSelection(point: Point) {
+      if (
+        this.selection?.component &&
+        this.selection.component.getBoundingBox().isInside(point)
+      ) {
+        this.mouseDownTime = Date.now();
+      }
+    },
+
+    resolveHoveredSelection(point: Point, hovered: Component): Component {
+      if (!this.selection?.component) return hovered;
+
+      const commonParent = this.getLowestCommonParents(
+        hovered,
+        this.selection.component.id,
+        point,
+      );
+      const sibling = commonParent
+        ?.getItems()
+        ?.find((c) => c.getBoundingBox().isInside(point));
+
+      if (sibling) return sibling;
+      if (commonParent) return commonParent;
+      return hovered;
+    },
+
+    updateSelectionOnMouseDown(point: Point, hovered: Component | undefined) {
+      if (!hovered) {
+        updateSelection({ value: null });
+        return undefined;
+      }
+
+      const currentSelection = this.selection?.component;
+      if (currentSelection && currentSelection.getBoundingBox().isInside(point)) {
+        return hovered;
+      }
+
+      const nextSelection = this.resolveHoveredSelection(point, hovered);
+      updateSelection({ value: nextSelection });
+      return nextSelection;
+    },
+
+    resolveModifierSetup(
+      point: Point,
+      selectedComponent: Component,
+      handler: ReturnType<typeof getHanderAt>,
+    ) {
+      let modifier: Modifier | undefined;
+      let icon: ResizeIcon | "move" | undefined = "move";
+      let singleAxis = false;
+
+      if (handler) {
+        modifier = handler.modifier;
+        icon = handler.icon;
+        singleAxis = handler.singleAxisAction;
+      } else if (selectedComponent.getBoundingBox().isInside(point)) {
+        this.setCursor("move");
+        modifier = moveModifier;
+      }
+
+      if (!modifier || icon === undefined) return null;
+      return { modifier, icon, singleAxis };
+    },
+
+    startModification(
+      event: MouseEvent,
+      point: Point,
+      handler: ReturnType<typeof getHanderAt>,
+    ) {
+      const selectedComponent = this.selection?.component;
+      if (!selectedComponent) return;
+      if (isComponentLocked(selectedComponent)) return;
+
+      const setup = this.resolveModifierSetup(point, selectedComponent, handler);
+      if (!setup) return;
+
+      this.modifying = {
+        startPosition: point,
+        icon: setup.icon,
+        elementStartPosition: selectedComponent.getBoundingBox(),
+        modifier: setup.modifier,
+        singleAxis: setup.singleAxis,
+        component: selectedComponent,
+        duplicateOnMove: event.altKey,
+        duplicated: false,
+        hasModified: false,
+      };
+
+      if (setup.icon !== "move") {
+        this.modifying.component.startResize(this.modifying.elementStartPosition);
+      }
+    },
+
     onClickDown(event: MouseEvent) {
       this.clearGuides();
       const point = this.getCursorPosition(event);
       const handler = getHanderAt(point);
-      let hovered = this.getElementAt(point);
+      const hovered = this.getElementAt(point);
 
       if (!handler) {
-        if (
-          this.selection?.component &&
-          this.selection?.component.getBoundingBox().isInside(point)
-        )
-          this.mouseDownTime = Date.now();
-
-        // Check for change of selection
-        if (
-          hovered &&
-          (!this.selection?.component ||
-            !this.selection?.component.getBoundingBox().isInside(point))
-        ) {
-          // If there is already an element selected, then the new selection will try to be as low as possible
-          // in the component tree towards the current selection. e.g.: it will try to select sibilings within the parent
-          if (this.selection?.component) {
-            const commonParent = this.getLowestCommonParents(
-              hovered,
-              this.selection?.component.id,
-              point,
-            );
-            const sibling = commonParent
-              ?.getItems()
-              ?.find((c) => c.getBoundingBox().isInside(point));
-
-            if (sibling) hovered = sibling;
-            else if (commonParent) hovered = commonParent;
-          }
-
-          updateSelection({ value: hovered });
-        }
-
-        if (!hovered) updateSelection({ value: null });
+        this.markMouseDownOnCurrentSelection(point);
+        this.updateSelectionOnMouseDown(point, hovered);
       }
 
-      const selectedComponent = this.selection?.component;
-      if (selectedComponent) {
-        if (isComponentLocked(selectedComponent)) {
-          this.redraw();
-          return;
-        }
-        let modifier;
-        let modifierIcon: ResizeIcon | "move" = "move";
-        let singleAxis = false;
-        if (handler) {
-          modifier = handler.modifier;
-          modifierIcon = handler.icon;
-          singleAxis = handler.singleAxisAction;
-        } else if (selectedComponent.getBoundingBox().isInside(point)) {
-          this.setCursor("move");
-          modifier = moveModifier;
-        }
-
-        if (modifier && modifierIcon !== undefined) {
-          this.modifying = {
-            startPosition: point,
-            icon: modifierIcon,
-            elementStartPosition: selectedComponent.getBoundingBox(),
-            modifier,
-            singleAxis,
-            component: selectedComponent,
-            duplicateOnMove: event.altKey,
-            duplicated: false,
-            hasModified: false,
-          };
-
-          if (modifierIcon !== "move") {
-            this.modifying.component.startResize(
-              this.modifying.elementStartPosition,
-            );
-          }
-        }
-      }
-
+      this.startModification(event, point, handler);
       this.redraw();
     },
 
@@ -509,99 +534,144 @@ export default defineComponent({
       (this.$refs.canvas as HTMLElement).style.cursor = style;
     },
 
+    shouldThrottleMove() {
+      return !!(this.modifying && Date.now() <= this.lastMove + 20);
+    },
+
+    getModifiedBounds(point: Point) {
+      const currentModifier = this.modifying!;
+      const xOff = point.x - currentModifier.startPosition.x;
+      const yOff = point.y - currentModifier.startPosition.y;
+      return currentModifier.modifier(
+        new Point(xOff, yOff),
+        currentModifier.elementStartPosition,
+      );
+    },
+
+    tryDuplicateWhileMoving(event: MouseEvent) {
+      if (!this.modifying) return;
+      if (!this.modifying.duplicateOnMove || this.modifying.duplicated) return;
+      if (!event.altKey) return;
+
+      const duplicate = this.duplicateComponentForMove(this.modifying.component);
+      if (!duplicate) return;
+
+      this.modifying.component = duplicate;
+      this.modifying.elementStartPosition = duplicate.getBoundingBox();
+      this.modifying.duplicated = true;
+    },
+
+    applyMoveBehavior(event: MouseEvent, bounds: BoundingBox) {
+      this.tryDuplicateWhileMoving(event);
+      if (!this.modifying) return bounds;
+
+      const nextBounds = this.applySnapping(bounds, this.modifying.component);
+      nextBounds.ensureBounds(this.width, this.height);
+      this.updateSpacingGuides(nextBounds, this.modifying.component);
+      return nextBounds;
+    },
+
+    markAsModifiedIfNeeded(newBounds: BoundingBox) {
+      if (!this.modifying || this.modifying.hasModified) return;
+
+      const start = this.modifying.elementStartPosition;
+      if (
+        newBounds.x !== start.x ||
+        newBounds.y !== start.y ||
+        newBounds.width !== start.width ||
+        newBounds.height !== start.height
+      ) {
+        this.modifying.hasModified = true;
+      }
+    },
+
+    handleActiveMove(event: MouseEvent, point: Point) {
+      if (!this.modifying) return;
+      if (isComponentLocked(this.modifying.component)) {
+        this.setCursor("default");
+        return;
+      }
+
+      this.setCursor(this.modifying.icon);
+      let newBounds = this.getModifiedBounds(point);
+
+      if (this.modifying.icon === "move") {
+        newBounds = this.applyMoveBehavior(event, newBounds);
+      } else {
+        this.clearGuides();
+        newBounds.ensureBounds(this.width, this.height);
+      }
+
+      this.markAsModifiedIfNeeded(newBounds);
+      this.modifying.component.modify(newBounds, this.modifying.singleAxis);
+    },
+
+    shouldUseResizeCursor(handler: ReturnType<typeof getHanderAt>) {
+      return (
+        !!handler &&
+        !!this.selection?.component &&
+        !isComponentLocked(this.selection.component)
+      );
+    },
+
+    shouldUseMoveCursor(point: Point, hovered: Component) {
+      return (
+        hovered == this.selection?.component ||
+        !!this.selection?.component?.getBoundingBox().isInside(point)
+      );
+    },
+
+    handleHoverMove(point: Point, hovered: Component | undefined) {
+      this.clearGuides();
+      const handler = getHanderAt(point);
+
+      if (this.shouldUseResizeCursor(handler)) {
+        this.setCursor(handler!.icon);
+        return;
+      }
+
+      if (!hovered) {
+        this.setCursor("default");
+        return;
+      }
+
+      if (this.shouldUseMoveCursor(point, hovered)) {
+        this.setCursor(
+          this.selection?.component && isComponentLocked(this.selection.component)
+            ? "default"
+            : "move",
+        );
+        return;
+      }
+
+      this.setCursor("pointer");
+    },
+
     onMove(event: MouseEvent) {
-      if (this.modifying && Date.now() <= this.lastMove + 20) return;
+      if (this.shouldThrottleMove()) return;
 
       this.lastMove = Date.now();
-
       const point = this.getCursorPosition(event);
       const hovered = this.getElementAt(point);
 
       if (this.modifying) {
-        if (isComponentLocked(this.modifying.component)) {
-          this.setCursor("default");
-          return;
-        }
-        this.setCursor(this.modifying.icon);
-
-        const xOff = point.x - this.modifying.startPosition.x;
-        const yOff = point.y - this.modifying.startPosition.y;
-
-        let newBounds = this.modifying.modifier(
-          new Point(xOff, yOff),
-          this.modifying.elementStartPosition,
-        );
-
-        if (this.modifying.icon === "move") {
-          if (
-            this.modifying.duplicateOnMove &&
-            !this.modifying.duplicated &&
-            event.altKey
-          ) {
-            const duplicate = this.duplicateComponentForMove(
-              this.modifying.component,
-            );
-            if (duplicate) {
-              this.modifying.component = duplicate;
-              this.modifying.elementStartPosition = duplicate.getBoundingBox();
-              this.modifying.duplicated = true;
-            }
-          }
-          newBounds = this.applySnapping(newBounds, this.modifying.component);
-          newBounds.ensureBounds(this.width, this.height);
-          this.updateSpacingGuides(newBounds, this.modifying.component);
-        } else {
-          this.clearGuides();
-          newBounds.ensureBounds(this.width, this.height);
-        }
-
-        if (!this.modifying.hasModified) {
-          const start = this.modifying.elementStartPosition;
-          if (
-            newBounds.x !== start.x ||
-            newBounds.y !== start.y ||
-            newBounds.width !== start.width ||
-            newBounds.height !== start.height
-          ) {
-            this.modifying.hasModified = true;
-          }
-        }
-
-        this.modifying.component.modify(newBounds, this.modifying.singleAxis);
+        this.handleActiveMove(event, point);
       } else {
-        this.clearGuides();
-        const handler = getHanderAt(point);
-        if (
-          handler &&
-          this.selection?.component &&
-          !isComponentLocked(this.selection.component)
-        ) {
-          this.setCursor(handler.icon);
-        } else if (hovered) {
-          if (
-            hovered == this.selection?.component ||
-            this.selection?.component?.getBoundingBox().isInside(point)
-          ) {
-            this.setCursor(
-              this.selection?.component &&
-                isComponentLocked(this.selection.component)
-                ? "default"
-                : "move",
-            );
-          } else this.setCursor("pointer");
-        } else {
-          this.setCursor("default");
-        }
+        this.handleHoverMove(point, hovered);
       }
     },
 
     clearGuides() {
+      this.clearSnapGuides();
+      if (this.spacingGuides.length) {
+        this.spacingGuides = [];
+      }
+    },
+
+    clearSnapGuides() {
       if (this.snapGuides.x.length || this.snapGuides.y.length) {
         this.snapGuides.x = [];
         this.snapGuides.y = [];
-      }
-      if (this.spacingGuides.length) {
-        this.spacingGuides = [];
       }
     },
 
@@ -661,68 +731,69 @@ export default defineComponent({
       return boxes;
     },
 
+    getSnapAnchors(start: number, size: number) {
+      return [start, start + size / 2, start + size];
+    },
+
+    findClosestSnap(
+      targets: number[],
+      anchors: number[],
+      threshold: number,
+    ): { diff: number; line: number } | null {
+      let snapped: { diff: number; line: number } | null = null;
+
+      for (const line of targets) {
+        for (const anchor of anchors) {
+          const diff = line - anchor;
+          const distance = Math.abs(diff);
+          if (distance > threshold) continue;
+          if (!snapped || distance < Math.abs(snapped.diff)) {
+            snapped = { diff, line };
+          }
+        }
+      }
+
+      return snapped;
+    },
+
+    applySnapResult(
+      value: number,
+      snapped: { diff: number; line: number } | null,
+    ) {
+      if (!snapped) {
+        return { value, guides: [] as number[] };
+      }
+      return {
+        value: value + snapped.diff,
+        guides: [snapped.line],
+      };
+    },
+
     applySnapping(bounds: BoundingBox, component: Component) {
       if (!this.settings.snapEnabled) {
-        if (this.snapGuides.x.length || this.snapGuides.y.length) {
-          this.snapGuides.x = [];
-          this.snapGuides.y = [];
-        }
+        this.clearSnapGuides();
         return bounds;
       }
 
       const snapThreshold = 6;
       const { x: xTargets, y: yTargets } = this.collectSnapTargets(component);
-      let snappedX: { diff: number; line: number } | null = null;
-      let snappedY: { diff: number; line: number } | null = null;
+      const snappedX = this.findClosestSnap(
+        xTargets,
+        this.getSnapAnchors(bounds.x, bounds.width),
+        snapThreshold,
+      );
+      const snappedY = this.findClosestSnap(
+        yTargets,
+        this.getSnapAnchors(bounds.y, bounds.height),
+        snapThreshold,
+      );
 
-      const xAnchors = [
-        bounds.x,
-        bounds.x + bounds.width / 2,
-        bounds.x + bounds.width,
-      ];
-      const yAnchors = [
-        bounds.y,
-        bounds.y + bounds.height / 2,
-        bounds.y + bounds.height,
-      ];
-
-      for (const line of xTargets) {
-        for (const anchor of xAnchors) {
-          const diff = line - anchor;
-          const dist = Math.abs(diff);
-          if (dist <= snapThreshold) {
-            if (!snappedX || dist < Math.abs(snappedX.diff)) {
-              snappedX = { diff, line };
-            }
-          }
-        }
-      }
-
-      for (const line of yTargets) {
-        for (const anchor of yAnchors) {
-          const diff = line - anchor;
-          const dist = Math.abs(diff);
-          if (dist <= snapThreshold) {
-            if (!snappedY || dist < Math.abs(snappedY.diff)) {
-              snappedY = { diff, line };
-            }
-          }
-        }
-      }
-
-      if (snappedX) {
-        bounds.x += snappedX.diff;
-        this.snapGuides.x = [snappedX.line];
-      } else {
-        this.snapGuides.x = [];
-      }
-
-      if (snappedY) {
-        bounds.y += snappedY.diff;
-        this.snapGuides.y = [snappedY.line];
-      } else {
-        this.snapGuides.y = [];
-      }
+      const snappedXResult = this.applySnapResult(bounds.x, snappedX);
+      const snappedYResult = this.applySnapResult(bounds.y, snappedY);
+      bounds.x = snappedXResult.value;
+      bounds.y = snappedYResult.value;
+      this.snapGuides.x = snappedXResult.guides;
+      this.snapGuides.y = snappedYResult.guides;
 
       return bounds;
     },

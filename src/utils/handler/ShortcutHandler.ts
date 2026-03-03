@@ -33,94 +33,133 @@ function keyZoom(ev: WheelEvent) {
   }
 }
 
-function keyPress(ev: KeyboardEvent) {
-  const target = ev.target as HTMLElement | null;
-  const modKey = ev.ctrlKey || ev.metaKey;
-  const key = ev.key.toLowerCase();
-  const isEditableTarget =
+function isEditableTarget(target: HTMLElement | null) {
+  return !!(
     target &&
     (target instanceof HTMLInputElement ||
       target instanceof HTMLTextAreaElement ||
       target instanceof HTMLSelectElement ||
-      target.isContentEditable);
+      target.isContentEditable)
+  );
+}
 
-  if (isEditableTarget && !(modKey && key == "s")) return;
+function handleCopyOrCutShortcut(modKey: boolean, key: string) {
+  if (!modKey || (key != "c" && key != "x")) return;
+  if (selection.value?.component) {
+    copiedComponent.value = selection.value.component.toJson();
+  }
+}
 
-  if (projectExplorerOpen.value) return;
+function getPasteTarget(): Component[] {
+  const target: Component[] = componentTree.value;
+  if (!selection.value?.component) return target;
 
-  if (modKey && (key == "c" || key == "x")) {
-    if (selection.value?.component)
-      copiedComponent.value = selection.value.component.toJson();
+  if (selection.value.component.isGroup()) {
+    return selection.value.component.getItems();
   }
 
+  return getParentComponent(selection.value.component)?.getItems() || target;
+}
+
+function handlePasteShortcut(modKey: boolean, key: string) {
   if (modKey && key == "v") {
-    let target: Component[] = componentTree.value;
-    if (selection.value?.component) {
-      if (selection.value.component.isGroup()) {
-        target = selection.value.component.getItems();
-      } else {
-        target =
-          getParentComponent(selection.value.component)?.getItems() || target;
-      }
-    }
-    pasteComponent(target);
+    pasteComponent(getPasteTarget());
   }
+}
 
+function handleSnapToggleShortcut(
+  ev: KeyboardEvent,
+  modKey: boolean,
+  key: string,
+) {
   if (modKey && ev.shiftKey && key == "s") {
     settings.snapEnabled = !settings.snapEnabled;
     ev.preventDefault();
-    return;
+    return true;
   }
+  return false;
+}
 
+function handleSaveShortcut(ev: KeyboardEvent, modKey: boolean, key: string) {
   if (modKey && key == "s") {
     saveCurrentProject();
     ev.preventDefault();
+    return true;
   }
+  return false;
+}
 
+function handleHistoryShortcut(ev: KeyboardEvent, modKey: boolean, key: string) {
   if (modKey && key == "z") {
     if (ev.shiftKey) redo();
     else undo();
-    return;
+    return true;
   }
 
   if (modKey && key == "y") {
     redo();
-    return;
+    return true;
   }
 
+  return false;
+}
+
+function deleteSelectedComponent() {
+  if (!selection.value?.component) return;
+  const parent = getParentList(selection.value.component);
+  if (!parent) return;
+
+  const index = parent.findIndex((c) => c.id == selection.value?.component.id);
+  parent.splice(index, 1);
+  updateSelection({ value: null });
+}
+
+function handleDeleteShortcut(ev: KeyboardEvent, modKey: boolean, key: string) {
   if (ev.code == "Delete" || ev.code == "Backspace" || (modKey && key == "x")) {
-    if (selection.value?.component) {
-      const parent = getParentList(selection.value.component);
-      if (parent) {
-        const index = parent.findIndex(
-          (c) => c.id == selection.value?.component.id,
-        );
-        parent.splice(index, 1);
-        updateSelection({ value: null });
-      }
-    }
+    deleteSelectedComponent();
   }
+}
 
-  if (
-    ev.code == "ArrowUp" ||
-    ev.code == "ArrowRight" ||
-    ev.code == "ArrowLeft" ||
-    ev.code == "ArrowDown"
-  ) {
-    if (selection.value?.component) {
-      if (isComponentLocked(selection.value.component)) return;
-      const bBox = selection.value.component.getBoundingBox();
+function getArrowModifier(code: string, shiftPressed: boolean) {
+  const modifier = shiftPressed ? 10 : 1;
+  if (code == "ArrowUp") return { x: 0, y: -modifier };
+  if (code == "ArrowDown") return { x: 0, y: modifier };
+  if (code == "ArrowRight") return { x: modifier, y: 0 };
+  if (code == "ArrowLeft") return { x: -modifier, y: 0 };
+  return null;
+}
 
-      const mod = ev.shiftKey ? 10 : 1;
+function handleArrowKeyShortcut(ev: KeyboardEvent) {
+  const selected = selection.value?.component;
+  if (!selected) return;
+  if (isComponentLocked(selected)) return;
 
-      if (ev.code == "ArrowUp") bBox.y -= mod;
-      else if (ev.code == "ArrowDown") bBox.y += mod;
-      else if (ev.code == "ArrowRight") bBox.x += mod;
-      else if (ev.code == "ArrowLeft") bBox.x -= mod;
+  const movement = getArrowModifier(ev.code, ev.shiftKey);
+  if (!movement) return;
 
-      selection.value.component.modify(bBox);
-    }
-  }
+  const bBox = selected.getBoundingBox();
+  bBox.x += movement.x;
+  bBox.y += movement.y;
+  selected.modify(bBox);
+}
+
+function keyPress(ev: KeyboardEvent) {
+  const target = ev.target as HTMLElement | null;
+  const modKey = ev.ctrlKey || ev.metaKey;
+  const key = ev.key.toLowerCase();
+  if (isEditableTarget(target) && !(modKey && key == "s")) return;
+
+  if (projectExplorerOpen.value) return;
+
+  handleCopyOrCutShortcut(modKey, key);
+  handlePasteShortcut(modKey, key);
+
+  if (handleSnapToggleShortcut(ev, modKey, key)) return;
+  if (handleSaveShortcut(ev, modKey, key)) return;
+  if (handleHistoryShortcut(ev, modKey, key)) return;
+
+  handleDeleteShortcut(ev, modKey, key);
+  handleArrowKeyShortcut(ev);
 }
 
 export function initializeShortcutHandler() {

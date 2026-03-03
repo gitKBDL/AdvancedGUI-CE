@@ -8,6 +8,7 @@ import { getRemoteImage, placeRemoteImage } from "../manager/ImageManager";
 import { settings } from "../manager/SettingsManager";
 import { devMode } from "../manager/WorkspaceManager";
 import { markRaw } from "vue";
+import { applyAspectRatioResize } from "./aspectRatioResize";
 
 export class RemoteImage extends GroupComponent {
   public static displayName: ComponentType = "Remote Image";
@@ -93,54 +94,20 @@ export class RemoteImage extends GroupComponent {
   }
 
   modify(newBoundingBox: BoundingBox): void {
-    this.x = newBoundingBox.x;
-    this.y = newBoundingBox.y;
-
-    const ratio = this.ratio ?? 0;
-    const canKeepRatio =
-      this.keepImageRatio && Number.isFinite(ratio) && ratio > 0;
-
-    if (canKeepRatio) {
-      const baseWidth =
-        this.resizeStartBounds?.width ?? this.lastResizeWidth ?? this.width;
-      const baseHeight =
-        this.resizeStartBounds?.height ?? this.lastResizeHeight ?? this.height;
-      const widthDelta = Math.abs(newBoundingBox.width - baseWidth);
-      const heightDelta = Math.abs(newBoundingBox.height - baseHeight);
-      const preferWidth = widthDelta >= heightDelta;
-
-      if (preferWidth) {
-        this.width = newBoundingBox.width;
-        this.height = this.width / ratio;
-      } else {
-        this.height = newBoundingBox.height;
-        this.width = this.height * ratio;
-      }
-
-      if (!devMode.value) {
-        const maxWidth = settings.width * 128;
-        const maxHeight = settings.height * 128;
-        const scale = Math.min(
-          1,
-          maxWidth / this.width,
-          maxHeight / this.height,
-        );
-        if (scale < 1) {
-          this.width *= scale;
-          this.height *= scale;
-        }
-
-        const bounds = new BoundingBox(this.x, this.y, this.width, this.height);
-        bounds.ensureBounds(maxWidth, maxHeight);
-        this.x = bounds.x;
-        this.y = bounds.y;
-        this.width = bounds.width;
-        this.height = bounds.height;
-      }
-    } else {
-      this.width = newBoundingBox.width;
-      this.height = newBoundingBox.height;
-    }
+    const resized = applyAspectRatioResize({
+      newBoundingBox,
+      ratio: this.ratio ?? 0,
+      keepRatio: this.keepImageRatio,
+      resizeStartBounds: this.resizeStartBounds,
+      lastResizeWidth: this.lastResizeWidth,
+      lastResizeHeight: this.lastResizeHeight,
+      maxWidth: devMode.value ? undefined : settings.width * 128,
+      maxHeight: devMode.value ? undefined : settings.height * 128,
+    });
+    this.x = resized.x;
+    this.y = resized.y;
+    this.width = resized.width;
+    this.height = resized.height;
 
     this.lastResizeWidth = this.width;
     this.lastResizeHeight = this.height;

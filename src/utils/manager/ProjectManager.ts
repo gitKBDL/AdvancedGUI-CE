@@ -27,21 +27,59 @@ async function updateProjectNames() {
   );
 }
 
-export async function loadProjects() {
-  projects.value = [];
-
-  const storedNames = await localforage.getItem("projectNames");
-  let projectNames: string[] = [];
+function parseStoredProjectNames(storedNames: unknown): string[] {
   if (typeof storedNames === "string") {
     try {
       const parsed = JSON.parse(storedNames);
-      if (Array.isArray(parsed)) projectNames = parsed as string[];
+      return Array.isArray(parsed) ? (parsed as string[]) : [];
     } catch {
-      projectNames = [];
+      return [];
     }
-  } else if (Array.isArray(storedNames)) {
-    projectNames = storedNames as string[];
   }
+
+  if (Array.isArray(storedNames)) {
+    return storedNames as string[];
+  }
+
+  return [];
+}
+
+function needsProjectNamesUpdate(projectNames: string[], validNames: string[]) {
+  return (
+    validNames.length !== projectNames.length ||
+    validNames.some((name, index) => name !== projectNames[index])
+  );
+}
+
+async function loadStoredProjectByName(name: string): Promise<Project | null> {
+  const storedProject = await localforage.getItem(`project/${name}`);
+
+  if (typeof storedProject === "string") {
+    try {
+      return JSON.parse(storedProject) as Project;
+    } catch {
+      return null;
+    }
+  }
+
+  if (storedProject && typeof storedProject === "object") {
+    return storedProject as Project;
+  }
+
+  return null;
+}
+
+async function removeInvalidStoredProject(name: string) {
+  await localforage.removeItem(`project/${name}`);
+  await localforage.removeItem(`thumbnail/${name}`);
+}
+
+export async function loadProjects() {
+  projects.value = [];
+
+  const projectNames = parseStoredProjectNames(
+    await localforage.getItem("projectNames"),
+  );
 
   const seen = new Set<string>();
   const validNames: string[] = [];
@@ -51,22 +89,10 @@ export async function loadProjects() {
     if (seen.has(name)) continue;
     seen.add(name);
 
-    const storedProject = await localforage.getItem(`project/${name}`);
-    let project: Project | null = null;
-
-    if (typeof storedProject === "string") {
-      try {
-        project = JSON.parse(storedProject) as Project;
-      } catch {
-        project = null;
-      }
-    } else if (storedProject && typeof storedProject === "object") {
-      project = storedProject as Project;
-    }
+    const project = await loadStoredProjectByName(name);
 
     if (!project || typeof project.name !== "string") {
-      await localforage.removeItem(`project/${name}`);
-      await localforage.removeItem(`thumbnail/${name}`);
+      await removeInvalidStoredProject(name);
       continue;
     }
 
@@ -78,10 +104,7 @@ export async function loadProjects() {
     validNames.push(name);
   }
 
-  if (
-    validNames.length !== projectNames.length ||
-    validNames.some((name, index) => name !== projectNames[index])
-  ) {
+  if (needsProjectNamesUpdate(projectNames, validNames)) {
     await localforage.setItem("projectNames", JSON.stringify(validNames));
   }
 }
