@@ -1,17 +1,6 @@
 <template>
-  <div id="rectEditor">
-    <color-input v-model:color="component.color"></color-input>
-    <div class="settings-row">
-      <span class="label">{{ t("rect.radius", "Border-radius") }}</span>
-      <input
-        type="number"
-        onkeypress="return event.charCode >= 48 && event.charCode <= 57;"
-        style="width: 48px"
-        v-model.number="component.radius"
-      />
-    </div>
-    <br />
-    <span class="label">{{ t("rect.dimensions", "Dimensions") }}</span>
+  <div>
+    <span class="label">{{ t("image.dimensions", "Dimensions") }}</span>
     <div class="settings-row">
       <div class="input-box">
         <input
@@ -48,18 +37,38 @@
         <span>H</span>
       </div>
     </div>
+    <div class="settings-row">
+      <div class="btn fillCanvas" @click="fillCanvas">
+        <span class="material-icons">wallpaper</span>
+        {{ t("image.fillCanvas", "Fill canvas") }}
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="label">{{ t("image.keepRatio", "Keep ratio") }}</span>
+      <input type="checkbox" v-model="component.keepImageRatio" />
+    </div>
+    <div class="settings-row">
+      <span class="label">{{ t("image.dithering", "Dithering") }}</span>
+      <input type="checkbox" v-model="component.dithering" />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { Rect } from "@/utils/components/Rect";
+import { defineComponent, PropType } from "vue";
 import { Template } from "@/utils/components/Template";
-import ColorInput from "../ColorInput.vue";
 import { t } from "@/utils/i18n";
 
+type ImageDimensionsComponent = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  keepImageRatio: boolean;
+  dithering: boolean;
+};
+
 export default defineComponent({
-  components: { ColorInput },
   data() {
     return {
       inputTransformer: Template.inputTransformer,
@@ -69,7 +78,7 @@ export default defineComponent({
 
   props: {
     component: {
-      type: Object as () => Rect,
+      type: Object as PropType<ImageDimensionsComponent>,
       required: true,
     },
     maxHeight: {
@@ -82,25 +91,13 @@ export default defineComponent({
     },
   },
 
-  watch: {
-    component: {
-      deep: true,
-      handler() {
-        this.ensureBounds();
-      },
-    },
-  },
-
   methods: {
-    ensureBounds() {
-      const bounds = this.component.getBoundingBox();
-      bounds.ensureBounds(this.maxWidth, this.maxHeight);
-      this.component.modify(bounds);
-
-      const minDim = Math.min(this.component.height, this.component.width);
-      if (this.component.radius > minDim / 2) {
-        this.component.radius = Math.floor(minDim / 2);
-      }
+    fillCanvas() {
+      this.component.keepImageRatio = false;
+      this.component.x = 0;
+      this.component.y = 0;
+      this.component.width = this.maxWidth;
+      this.component.height = this.maxHeight;
     },
   },
 });

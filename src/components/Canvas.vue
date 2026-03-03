@@ -45,6 +45,24 @@ export function requestRedraw() {
   if (redrawFunction) redrawFunction();
 }
 
+type SpacingGuide = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  label: string;
+  axis: "x" | "y";
+};
+
+type SpacingGuideX = { dist: number; lineY: number; edgeX: number };
+type SpacingGuideY = { dist: number; lineX: number; edgeY: number };
+type SpacingCandidates = {
+  left: SpacingGuideX | null;
+  right: SpacingGuideX | null;
+  top: SpacingGuideY | null;
+  bottom: SpacingGuideY | null;
+};
+
 export default defineComponent({
   data() {
     return {
@@ -79,14 +97,7 @@ export default defineComponent({
         x: [] as number[],
         y: [] as number[],
       },
-      spacingGuides: [] as {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        label: string;
-        axis: "x" | "y";
-      }[],
+      spacingGuides: [] as SpacingGuide[],
     };
   },
 
@@ -798,139 +809,173 @@ export default defineComponent({
       return bounds;
     },
 
-    updateSpacingGuides(bounds: BoundingBox, component: Component) {
-      const targets = this.collectSpacingTargets(component);
-      const guides: {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        label: string;
-        axis: "x" | "y";
-      }[] = [];
+    getAxisOverlap(startA: number, sizeA: number, startB: number, sizeB: number) {
+      const start = Math.max(startA, startB);
+      const end = Math.min(startA + sizeA, startB + sizeB);
+      if (end <= start) return null;
+      return {
+        start,
+        end,
+        center: (start + end) / 2,
+      };
+    },
 
-      const overlapY = (a: BoundingBox, b: BoundingBox) =>
-        Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
-      const overlapX = (a: BoundingBox, b: BoundingBox) =>
-        Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+    isCloserCandidate(
+      current: { dist: number } | null,
+      next: { dist: number },
+    ) {
+      return !current || next.dist < current.dist;
+    },
 
-      type SpacingGuideX = { dist: number; lineY: number; edgeX: number };
-      type SpacingGuideY = { dist: number; lineX: number; edgeY: number };
+    updateHorizontalSpacingCandidates(
+      bounds: BoundingBox,
+      box: BoundingBox,
+      candidates: SpacingCandidates,
+    ) {
+      const overlap = this.getAxisOverlap(bounds.y, bounds.height, box.y, box.height);
+      if (!overlap) return;
 
-      let left: SpacingGuideX | null = null;
-      let right: SpacingGuideX | null = null;
-      let top: SpacingGuideY | null = null;
-      let bottom: SpacingGuideY | null = null;
-
-      for (const box of targets) {
-        const yOverlap = overlapY(bounds, box);
-        if (yOverlap > 0) {
-          const overlapStart = Math.max(bounds.y, box.y);
-          const overlapEnd = Math.min(
-            bounds.y + bounds.height,
-            box.y + box.height,
-          );
-          const lineY = (overlapStart + overlapEnd) / 2;
-          if (box.x + box.width <= bounds.x) {
-            const dist = bounds.x - (box.x + box.width);
-            if (!left || dist < left.dist) {
-              left = {
-                dist,
-                lineY,
-                edgeX: box.x + box.width,
-              };
-            }
-          }
-
-          if (box.x >= bounds.x + bounds.width) {
-            const dist = box.x - (bounds.x + bounds.width);
-            if (!right || dist < right.dist) {
-              right = {
-                dist,
-                lineY,
-                edgeX: box.x,
-              };
-            }
-          }
-        }
-
-        const xOverlap = overlapX(bounds, box);
-        if (xOverlap > 0) {
-          const overlapStart = Math.max(bounds.x, box.x);
-          const overlapEnd = Math.min(
-            bounds.x + bounds.width,
-            box.x + box.width,
-          );
-          const lineX = (overlapStart + overlapEnd) / 2;
-          if (box.y + box.height <= bounds.y) {
-            const dist = bounds.y - (box.y + box.height);
-            if (!top || dist < top.dist) {
-              top = {
-                dist,
-                lineX,
-                edgeY: box.y + box.height,
-              };
-            }
-          }
-
-          if (box.y >= bounds.y + bounds.height) {
-            const dist = box.y - (bounds.y + bounds.height);
-            if (!bottom || dist < bottom.dist) {
-              bottom = {
-                dist,
-                lineX,
-                edgeY: box.y,
-              };
-            }
-          }
+      const lineY = overlap.center;
+      if (box.x + box.width <= bounds.x) {
+        const left: SpacingGuideX = {
+          dist: bounds.x - (box.x + box.width),
+          lineY,
+          edgeX: box.x + box.width,
+        };
+        if (this.isCloserCandidate(candidates.left, left)) {
+          candidates.left = left;
         }
       }
 
-      if (left && left.dist > 0) {
-        guides.push({
-          x1: left.edgeX,
-          y1: left.lineY,
+      if (box.x >= bounds.x + bounds.width) {
+        const right: SpacingGuideX = {
+          dist: box.x - (bounds.x + bounds.width),
+          lineY,
+          edgeX: box.x,
+        };
+        if (this.isCloserCandidate(candidates.right, right)) {
+          candidates.right = right;
+        }
+      }
+    },
+
+    updateVerticalSpacingCandidates(
+      bounds: BoundingBox,
+      box: BoundingBox,
+      candidates: SpacingCandidates,
+    ) {
+      const overlap = this.getAxisOverlap(bounds.x, bounds.width, box.x, box.width);
+      if (!overlap) return;
+
+      const lineX = overlap.center;
+      if (box.y + box.height <= bounds.y) {
+        const top: SpacingGuideY = {
+          dist: bounds.y - (box.y + box.height),
+          lineX,
+          edgeY: box.y + box.height,
+        };
+        if (this.isCloserCandidate(candidates.top, top)) {
+          candidates.top = top;
+        }
+      }
+
+      if (box.y >= bounds.y + bounds.height) {
+        const bottom: SpacingGuideY = {
+          dist: box.y - (bounds.y + bounds.height),
+          lineX,
+          edgeY: box.y,
+        };
+        if (this.isCloserCandidate(candidates.bottom, bottom)) {
+          candidates.bottom = bottom;
+        }
+      }
+    },
+
+    createHorizontalGuide(
+      bounds: BoundingBox,
+      guide: SpacingGuideX,
+      direction: "left" | "right",
+    ): SpacingGuide {
+      if (direction === "left") {
+        return {
+          x1: guide.edgeX,
+          y1: guide.lineY,
           x2: bounds.x,
-          y2: left.lineY,
-          label: Math.round(left.dist).toString(),
+          y2: guide.lineY,
+          label: Math.round(guide.dist).toString(),
           axis: "x",
-        });
+        };
       }
 
-      if (right && right.dist > 0) {
-        guides.push({
-          x1: bounds.x + bounds.width,
-          y1: right.lineY,
-          x2: right.edgeX,
-          y2: right.lineY,
-          label: Math.round(right.dist).toString(),
-          axis: "x",
-        });
-      }
+      return {
+        x1: bounds.x + bounds.width,
+        y1: guide.lineY,
+        x2: guide.edgeX,
+        y2: guide.lineY,
+        label: Math.round(guide.dist).toString(),
+        axis: "x",
+      };
+    },
 
-      if (top && top.dist > 0) {
-        guides.push({
-          x1: top.lineX,
-          y1: top.edgeY,
-          x2: top.lineX,
+    createVerticalGuide(
+      bounds: BoundingBox,
+      guide: SpacingGuideY,
+      direction: "top" | "bottom",
+    ): SpacingGuide {
+      if (direction === "top") {
+        return {
+          x1: guide.lineX,
+          y1: guide.edgeY,
+          x2: guide.lineX,
           y2: bounds.y,
-          label: Math.round(top.dist).toString(),
+          label: Math.round(guide.dist).toString(),
           axis: "y",
-        });
+        };
       }
 
-      if (bottom && bottom.dist > 0) {
-        guides.push({
-          x1: bottom.lineX,
-          y1: bounds.y + bounds.height,
-          x2: bottom.lineX,
-          y2: bottom.edgeY,
-          label: Math.round(bottom.dist).toString(),
-          axis: "y",
-        });
+      return {
+        x1: guide.lineX,
+        y1: bounds.y + bounds.height,
+        x2: guide.lineX,
+        y2: guide.edgeY,
+        label: Math.round(guide.dist).toString(),
+        axis: "y",
+      };
+    },
+
+    buildSpacingGuides(bounds: BoundingBox, candidates: SpacingCandidates) {
+      const guides: SpacingGuide[] = [];
+
+      if (candidates.left && candidates.left.dist > 0) {
+        guides.push(this.createHorizontalGuide(bounds, candidates.left, "left"));
+      }
+      if (candidates.right && candidates.right.dist > 0) {
+        guides.push(this.createHorizontalGuide(bounds, candidates.right, "right"));
+      }
+      if (candidates.top && candidates.top.dist > 0) {
+        guides.push(this.createVerticalGuide(bounds, candidates.top, "top"));
+      }
+      if (candidates.bottom && candidates.bottom.dist > 0) {
+        guides.push(this.createVerticalGuide(bounds, candidates.bottom, "bottom"));
       }
 
-      this.spacingGuides = guides;
+      return guides;
+    },
+
+    updateSpacingGuides(bounds: BoundingBox, component: Component) {
+      const candidates: SpacingCandidates = {
+        left: null,
+        right: null,
+        top: null,
+        bottom: null,
+      };
+
+      for (const box of this.collectSpacingTargets(component)) {
+        this.updateHorizontalSpacingCandidates(bounds, box, candidates);
+        this.updateVerticalSpacingCandidates(bounds, box, candidates);
+      }
+
+      this.spacingGuides = this.buildSpacingGuides(bounds, candidates);
     },
 
     getCursorPosition(event: MouseEvent): Point {

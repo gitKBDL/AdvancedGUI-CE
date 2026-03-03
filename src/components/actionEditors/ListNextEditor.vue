@@ -1,33 +1,5 @@
 <template>
-  <div id="visCheckSettings">
-    <div class="settings-row">
-      <span class="label">{{ t("listNext.viewId", "View ID") }}</span>
-      <input
-        type="text"
-        ref="test"
-        class="componentIdInput"
-        @focus="idWatcher = (val) => (action.targetId = val)"
-        v-model="action.targetId"
-      />
-    </div>
-    <p
-      class="label"
-      :class="
-        components[action.targetId] &&
-        components[action.targetId].displayName == 'View'
-          ? ''
-          : 'red-text'
-      "
-    >
-      {{ t("listNext.target", "TARGET")
-      }}{{
-        !components[action.targetId]
-          ? t("listNext.notFound", " NOT FOUND!")
-          : components[action.targetId].displayName != "View"
-            ? t("listNext.notView", " is not a view")
-            : ": " + components[action.targetId].name
-      }}
-    </p>
+  <list-next-target-section :action="action">
     <div class="settings-row">
       <span class="label">{{ t("listNext.goTo", "Go to") }} </span>
       <select v-model="action.forward" style="margin-right: 8px">
@@ -38,22 +10,21 @@
         {{ t("listNext.pageIfPossible", "page, if possible") }}
       </span>
     </div>
-  </div>
+  </list-next-target-section>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { components } from "@/utils/manager/ComponentManager";
-import { idWatcher } from "@/utils/manager/WorkspaceManager";
-import { vueRef } from "../../utils/VueRef";
 import { ListNextAction } from "../../utils/actions/ListNextAction";
 import { t } from "@/utils/i18n";
+import ListNextTargetSection from "./ListNextTargetSection.vue";
 
 export default defineComponent({
+  components: {
+    ListNextTargetSection,
+  },
   data() {
     return {
-      components,
-      idWatcher: vueRef(idWatcher),
       t,
     };
   },
@@ -66,12 +37,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="scss" scoped>
-#viewSettings {
-  p {
-    color: $light2;
-    margin-top: 0px;
-  }
-}
-</style>
