@@ -12,57 +12,21 @@
     </div>
     <br />
     <span class="label">{{ t("rect.dimensions", "Dimensions") }}</span>
-    <div class="settings-row">
-      <div class="input-box">
-        <input
-          type="number"
-          @keypress="inputTransformer($event, component.x)"
-          v-model.number="component.x"
-        />
-        <span>X</span>
-      </div>
-      <div class="input-box">
-        <input
-          type="number"
-          @keypress="inputTransformer($event, component.width)"
-          v-model.number="component.width"
-        />
-        <span>W</span>
-      </div>
-    </div>
-    <div class="settings-row">
-      <div class="input-box">
-        <input
-          type="number"
-          @keypress="inputTransformer($event, component.y)"
-          v-model.number="component.y"
-        />
-        <span>Y</span>
-      </div>
-      <div class="input-box">
-        <input
-          type="number"
-          @keypress="inputTransformer($event, component.height)"
-          v-model.number="component.height"
-        />
-        <span>H</span>
-      </div>
-    </div>
+    <bounding-box-inputs :component="component" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import { Rect } from "@/utils/components/Rect";
-import { Template } from "@/utils/components/Template";
 import ColorInput from "../ColorInput.vue";
 import { t } from "@/utils/i18n";
+import BoundingBoxInputs from "./BoundingBoxInputs.vue";
 
 export default defineComponent({
-  components: { ColorInput },
+  components: { ColorInput, BoundingBoxInputs },
   data() {
     return {
-      inputTransformer: Template.inputTransformer,
       t,
     };
   },
