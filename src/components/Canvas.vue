@@ -35,7 +35,12 @@ import {
   selection,
   updateSelection,
 } from "../utils/manager/WorkspaceManager";
-import { unsavedChange, updateHistory } from "../utils/manager/HistoryManager";
+import {
+  pauseHistoryTracking,
+  resumeHistoryTracking,
+  unsavedChange,
+  updateHistory,
+} from "../utils/manager/HistoryManager";
 import { vueRef } from "../utils/VueRef";
 import { updateCurrentThumbnail } from "../utils/manager/ProjectManager";
 
@@ -132,6 +137,11 @@ export default defineComponent({
       window.cancelAnimationFrame(this.redrawRafId);
       this.redrawRafId = null;
       this.redrawQueued = false;
+    }
+    if (this.modifying) {
+      this.modifying.component.endResize();
+      this.modifying = null;
+      resumeHistoryTracking();
     }
     redrawFunction = null;
     this.moveTargetsCache = null;
@@ -525,6 +535,7 @@ export default defineComponent({
         duplicated: false,
         hasModified: false,
       };
+      pauseHistoryTracking();
 
       if (setup.icon !== "move") {
         this.modifying.component.startResize(this.modifying.elementStartPosition);
@@ -573,15 +584,17 @@ export default defineComponent({
       }
 
       this.redraw();
-      const shouldUpdateHistory = this.modifying?.hasModified;
-      if (shouldUpdateHistory) updateHistory();
+      const currentModification = this.modifying;
+      const shouldUpdateHistory = currentModification?.hasModified;
 
-      if (this.modifying) {
-        this.modifying.component.endResize();
+      if (currentModification) {
+        currentModification.component.endResize();
+        resumeHistoryTracking();
       }
 
       this.modifying = null;
       this.invalidateMoveTargetsCache();
+      if (shouldUpdateHistory) updateHistory();
     },
 
     getElementAt(point: Point) {

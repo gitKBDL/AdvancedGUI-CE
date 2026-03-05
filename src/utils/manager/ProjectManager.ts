@@ -7,7 +7,12 @@ import {
   loadProjectFromJson,
 } from "../handler/ProjectSerializationHandler";
 import { Project } from "../Project";
-import { clearHistory, unsavedChange } from "./HistoryManager";
+import {
+  pauseHistoryTracking,
+  resetHistoryWithCurrentState,
+  resumeHistoryTracking,
+  unsavedChange,
+} from "./HistoryManager";
 import { settings } from "./SettingsManager";
 import { migrate, VERSION } from "./UpdateManager";
 import { error, info, loading } from "./WorkspaceManager";
@@ -166,12 +171,6 @@ export async function saveCurrentProject() {
 }
 
 export async function importProject(data: unknown) {
-  // lastOpendProjectName = project.name;
-  // projectExplorerOpen.value = false;
-
-  // clearHistory();
-  // unsavedChange.value = false; //TODO
-
   const validatedProject = sanitizeImportedProjectData(data);
   if (!validatedProject) {
     error(
@@ -193,9 +192,11 @@ export async function importProject(data: unknown) {
   );
 
   lastOpendProjectName = validatedProject.name;
+  pauseHistoryTracking();
   loading(true);
   try {
     await loadProjectFromJson(validatedProject, false);
+    resetHistoryWithCurrentState();
   } catch (exc) {
     error(
       t(
@@ -205,6 +206,7 @@ export async function importProject(data: unknown) {
     );
     return;
   } finally {
+    resumeHistoryTracking();
     loading(false);
   }
 
@@ -270,13 +272,12 @@ export async function openProject(project: Project) {
   lastOpendProjectName = project.name;
 
   project = migrateAndPersistProject(project);
-
-  clearHistory();
-  unsavedChange.value = false;
+  pauseHistoryTracking();
 
   loading(true);
   try {
     await loadProjectFromJson(project, false);
+    resetHistoryWithCurrentState();
     projectExplorerOpen.value = false;
   } catch (exc) {
     error(
@@ -287,6 +288,7 @@ export async function openProject(project: Project) {
     );
     projectExplorerOpen.value = true;
   } finally {
+    resumeHistoryTracking();
     loading(false);
   }
 }

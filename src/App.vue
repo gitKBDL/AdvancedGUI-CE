@@ -4,7 +4,6 @@
       <app-header />
       <div
         class="row mainSpace"
-        @click.capture="scheduleHistoryUpdate"
         @mousedown.capture="blurActiveElement"
       >
         <component-tree />
@@ -74,7 +73,8 @@ import { vueRef } from "./utils/VueRef";
 import ProjectExplorer from "./components/ProjectExplorer.vue";
 import {
   unsavedChange,
-  scheduleHistoryUpdate,
+  initializeHistoryAutoTracking,
+  shutdownHistoryAutoTracking,
 } from "./utils/manager/HistoryManager";
 import { t } from "./utils/i18n";
 
@@ -96,7 +96,6 @@ export default defineComponent({
     return {
       baseUrl,
       projectExplorerOpen: vueRef(projectExplorerOpen),
-      scheduleHistoryUpdate,
       selection: vueRef(selection),
       beforeUnloadHandler: null as
         | ((e: BeforeUnloadEvent) => string | undefined)
@@ -114,6 +113,7 @@ export default defineComponent({
     initializeShortcutHandler();
     loading(true);
     await loadProjects();
+    initializeHistoryAutoTracking();
     loading(false);
     this.startAutoSave();
 
@@ -136,6 +136,7 @@ export default defineComponent({
 
   unmounted() {
     shutdownShortcutHandler();
+    shutdownHistoryAutoTracking();
     this.stopAutoSave();
     if (this.beforeUnloadHandler) {
       window.removeEventListener("beforeunload", this.beforeUnloadHandler);
