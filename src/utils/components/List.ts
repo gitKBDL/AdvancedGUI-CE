@@ -27,6 +27,12 @@ export class List extends GroupComponent {
   public icon = List.icon;
   public vueComponent = markRaw(Editor);
   public actionable = false;
+  private transpileCache:
+    | {
+        key: string;
+        view: View;
+      }
+    | null = null;
 
   constructor(
     public id: string,
@@ -58,6 +64,24 @@ export class List extends GroupComponent {
   }
 
   transpileToGroup(): View {
+    const componentSnapshots = this.components.map((component) =>
+      component.toJson(true),
+    );
+    const cacheKey = JSON.stringify({
+      id: this.id,
+      xOffset: this.xOffset,
+      yOffset: this.yOffset,
+      itemsAtOnce: this.itemsAtOnce,
+      entryType: this.entryType,
+      entries: this.entries,
+      drawOffset: this.drawOffset,
+      componentSnapshots,
+    });
+
+    if (this.transpileCache?.key === cacheKey) {
+      return this.transpileCache.view;
+    }
+
     const { x, y } = super.getBoundingBox();
 
     const pages: GroupComponent[] = [];
@@ -83,13 +107,19 @@ export class List extends GroupComponent {
             },
             `${pageId}#${rowInd}`,
             this.components,
+            componentSnapshots,
           ),
         );
       }
       pages.push(new GroupComponent(pageId, "", [], rowEntries, false));
     }
 
-    return new View(this.id, this.name, [], pages, false, this.drawOffset);
+    const view = new View(this.id, this.name, [], pages, false, this.drawOffset);
+    this.transpileCache = {
+      key: cacheKey,
+      view,
+    };
+    return view;
   }
 
   draw(context: CanvasRenderingContext2D): void {

@@ -16,12 +16,13 @@ export function transpileToGroup(
   position = null as { x: number; y: number } | null,
   id: string,
   components: Component[],
+  componentSnapshots = components.map((component) => component.toJson(true)),
 ): GroupComponent {
   const idGenerator = (compId: string) => `${compId}#${id}`;
 
-  const newComps = components
-    .map((comp) => {
-      let json = comp.toJson(true);
+  const newComps = componentSnapshots
+    .map((sourceJson) => {
+      let json = sourceJson;
       for (const entry of data) {
         let value = entry.value;
         if (typeof value == "number") {
@@ -80,6 +81,12 @@ export class Template extends GroupComponent {
   public icon = Template.icon;
   public vueComponent = markRaw(Editor);
   public actionable = false;
+  private transpileCache:
+    | {
+        key: string;
+        group: GroupComponent;
+      }
+    | null = null;
 
   constructor(
     public id: string,
@@ -97,7 +104,32 @@ export class Template extends GroupComponent {
     position = null as { x: number; y: number } | null,
     id = this.id,
   ): GroupComponent {
-    return transpileToGroup(data, position, id, this.components);
+    const componentSnapshots = this.components.map((component) =>
+      component.toJson(true),
+    );
+    const cacheKey = JSON.stringify({
+      id,
+      position,
+      data,
+      componentSnapshots,
+    });
+
+    if (this.transpileCache?.key === cacheKey) {
+      return this.transpileCache.group;
+    }
+
+    const group = transpileToGroup(
+      data,
+      position,
+      id,
+      this.components,
+      componentSnapshots,
+    );
+    this.transpileCache = {
+      key: cacheKey,
+      group,
+    };
+    return group;
   }
 
   draw(context: CanvasRenderingContext2D): void {

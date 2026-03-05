@@ -7,7 +7,7 @@ import {
   components,
 } from "../manager/ComponentManager";
 import { Component, ComponentType } from "./Component";
-import { Template } from "./Template";
+import { Template, transpileToGroup } from "./Template";
 import { GroupComponent } from "./GroupComponent";
 import { markRaw } from "vue";
 
@@ -18,6 +18,12 @@ export class Replica extends Component {
   public icon = Replica.icon;
   public vueComponent = markRaw(Editor);
   public actionable = false;
+  private transpileCache:
+    | {
+        key: string;
+        group: GroupComponent;
+      }
+    | null = null;
 
   constructor(
     public id: string,
@@ -38,11 +44,41 @@ export class Replica extends Component {
   }
 
   private getGroup(): GroupComponent | undefined {
-    return this.getTemplate()?.transpileToGroup(
+    const template = this.getTemplate();
+    if (!template) {
+      this.transpileCache = null;
+      return undefined;
+    }
+
+    const componentSnapshots = template.components.map((component) =>
+      component.toJson(true),
+    );
+    const cacheKey = JSON.stringify({
+      id: this.id,
+      targetId: this.targetId,
+      position: this.position,
+      templateData: this.templateData,
+      componentSnapshots,
+    });
+
+    if (this.transpileCache?.key === cacheKey) {
+      return this.transpileCache.group;
+    }
+
+    const group = transpileToGroup(
       this.templateData,
       this.position,
       this.id,
+      template.components,
+      componentSnapshots,
     );
+
+    this.transpileCache = {
+      key: cacheKey,
+      group,
+    };
+
+    return group;
   }
 
   getTemplateDefaultData() {

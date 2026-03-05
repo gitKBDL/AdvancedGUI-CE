@@ -20,11 +20,7 @@
           <input
             type="text"
             :value="selection.component.id"
-            @input="
-              !devMode
-                ? ($refs.idInput.value = selection.component.id)
-                : (selection.component.id = $refs.idInput.value)
-            "
+            @input="onIdInput"
             ref="idInput"
           />
           <span class="material-icons" @click="copyID()" ref="copyIcon"
@@ -246,6 +242,7 @@ import { vueRef } from "../utils/VueRef";
 import { t } from "@/utils/i18n";
 import { BoundingBox } from "@/utils/BoundingBox";
 import { updateHistory } from "@/utils/manager/HistoryManager";
+import { renameComponentAndReferences } from "@/utils/manager/ComponentIdManager";
 
 type ImageLikeComponent = Component & { keepImageRatio: boolean };
 
@@ -324,6 +321,19 @@ export default defineComponent({
   },
 
   methods: {
+    onIdInput(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const selected = this.selection?.component;
+      if (!selected) return;
+
+      if (!this.devMode) {
+        input.value = selected.id;
+        return;
+      }
+
+      input.value = renameComponentAndReferences(selected, input.value);
+    },
+
     fillCanvas() {
       if (
         this.selection?.component &&
