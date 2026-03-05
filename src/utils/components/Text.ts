@@ -6,6 +6,7 @@ import { Component, ComponentType } from "./Component";
 import { markRaw } from "vue";
 import { getRandomColor } from "../ColorUtils";
 import { ParsedText } from "../ParsedText";
+import { settings } from "../manager/SettingsManager";
 
 export class Text extends Component {
   public static displayName: ComponentType = "Text";
@@ -15,6 +16,7 @@ export class Text extends Component {
   public vueComponent = markRaw(TextEditor);
 
   private parsedText: ParsedText | null = null;
+  private static measureContext: CanvasRenderingContext2D | null = null;
 
   constructor(
     public id: string,
@@ -33,36 +35,146 @@ export class Text extends Component {
     super(id, name, clickAction);
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    const renderText = this.placeholder ? this.previewText : this.text;
+  private static getMeasureContext() {
+    if (Text.measureContext) return Text.measureContext;
 
-    context.font = `${this.size}px ${this.font}`;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Unable to create 2D context for text measurement");
+    }
 
+    Text.measureContext = ctx;
+    return ctx;
+  }
+
+  private getRenderText() {
+    return this.placeholder ? this.previewText : this.text;
+  }
+
+  private ensureParsedText(context?: CanvasRenderingContext2D) {
+    const targetContext = context || Text.getMeasureContext();
+    targetContext.font = `${this.size}px ${this.font}`;
+
+    const renderText = this.getRenderText();
     if (
       this.parsedText?.rawText !== renderText ||
       this.parsedText.defaultColor !== this.color ||
-      this.parsedText.state !== context.font
+      this.parsedText.state !== targetContext.font
     ) {
       this.parsedText = new ParsedText(
         renderText,
         this.color,
-        context.font,
-        context,
+        targetContext.font,
+        targetContext,
       );
     }
 
-    const lineCount = this.parsedText.getLineCount();
+    return this.parsedText;
+  }
+
+  private getLineStartX(parsedText: ParsedText, line: number) {
+    if (!settings.textHorizontalPixelAlign) {
+      return this.x - (this.alignment / 2) * parsedText.getLineAdvanceWidth(line);
+    }
+
+    const lineMetrics = parsedText.getLineMetrics(line);
+    if (!lineMetrics.hasPixels) {
+      return this.x - (this.alignment / 2) * parsedText.getLineAdvanceWidth(line);
+    }
+
+    const pixelWidth = lineMetrics.pixelMaxX - lineMetrics.pixelMinX;
+    return this.x - lineMetrics.pixelMinX - (this.alignment / 2) * pixelWidth;
+  }
+
+  private getVerticalBounds(parsedText: ParsedText) {
+    const lineCount = parsedText.getLineCount();
+    if (!settings.textVerticalPixelCrop) {
+      return {
+        y: this.y - this.size * lineCount,
+        height: this.size * lineCount,
+      };
+    }
+
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (let line = 0; line < lineCount; line++) {
+      const lineMetrics = parsedText.getLineMetrics(line);
+      if (!lineMetrics.hasPixels) continue;
+
+      const baselineY = this.y - (lineCount - 1 - line) * this.size;
+      const top = baselineY - lineMetrics.pixelAscent;
+      const bottom = baselineY + lineMetrics.pixelDescent;
+
+      if (top < minY) minY = top;
+      if (bottom > maxY) maxY = bottom;
+    }
+
+    if (!Number.isFinite(minY) || !Number.isFinite(maxY)) {
+      return {
+        y: this.y - this.size * lineCount,
+        height: this.size * lineCount,
+      };
+    }
+
+    return {
+      y: minY,
+      height: maxY - minY,
+    };
+  }
+
+  private getHorizontalBounds(parsedText: ParsedText) {
+    if (!settings.textHorizontalPixelAlign) {
+      return {
+        x: this.x - (this.alignment / 2) * (parsedText.width || 0),
+        width: parsedText.width || 0,
+      };
+    }
+
+    const lineCount = parsedText.getLineCount();
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+
+    for (let line = 0; line < lineCount; line++) {
+      const lineMetrics = parsedText.getLineMetrics(line);
+      if (!lineMetrics.hasPixels) continue;
+
+      const lineStartX = this.getLineStartX(parsedText, line);
+      const left = lineStartX + lineMetrics.pixelMinX;
+      const right = lineStartX + lineMetrics.pixelMaxX;
+      if (left < minX) minX = left;
+      if (right > maxX) maxX = right;
+    }
+
+    if (!Number.isFinite(minX) || !Number.isFinite(maxX)) {
+      return {
+        x: this.x - (this.alignment / 2) * (parsedText.width || 0),
+        width: parsedText.width || 0,
+      };
+    }
+
+    return {
+      x: minX,
+      width: maxX - minX,
+    };
+  }
+
+  draw(context: CanvasRenderingContext2D): void {
+    const parsedText = this.ensureParsedText(context);
+    const lineCount = parsedText.getLineCount();
     for (let l = 0; l < lineCount; l++) {
-      const line = this.parsedText.getLine(l);
+      const line = parsedText.getLine(l);
+      const baselineY = this.y - (lineCount - 1 - l) * this.size;
+      const lineStartX = this.getLineStartX(parsedText, l);
 
       let xOffset = 0;
-      const lineWidth = line.reduce((sum, f) => sum + f.width, 0);
       for (const fragment of line) {
         context.fillStyle = fragment.color;
         context.fillText(
           fragment.text,
-          this.x - (this.alignment / 2) * lineWidth + xOffset,
-          this.y - (lineCount - 1 - l) * this.size,
+          lineStartX + xOffset,
+          baselineY,
         );
 
         xOffset += fragment.width;
@@ -71,19 +183,21 @@ export class Text extends Component {
   }
 
   modify(newBoundingBox: BoundingBox): void {
-    this.x =
-      newBoundingBox.x + (this.alignment / 2) * (this.parsedText?.width || 0);
-    this.y =
-      newBoundingBox.y + this.size * (this.parsedText?.getLineCount() || 0);
+    const currentBoundingBox = this.getBoundingBox();
+    this.x += newBoundingBox.x - currentBoundingBox.x;
+    this.y += newBoundingBox.y - currentBoundingBox.y;
   }
 
   getBoundingBox() {
-    const lineCount = this.parsedText?.getLineCount() || 0;
+    const parsedText = this.ensureParsedText();
+    const horizontalBounds = this.getHorizontalBounds(parsedText);
+    const verticalBounds = this.getVerticalBounds(parsedText);
+
     return new BoundingBox(
-      this.x - (this.alignment / 2) * (this.parsedText?.width || 0),
-      this.y - this.size * lineCount,
-      this.parsedText?.width || 0,
-      this.size * lineCount,
+      horizontalBounds.x,
+      verticalBounds.y,
+      horizontalBounds.width,
+      verticalBounds.height,
     );
   }
 

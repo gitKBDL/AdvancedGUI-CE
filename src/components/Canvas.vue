@@ -209,6 +209,14 @@ export default defineComponent({
         this.snapGuides.y = [];
       }
     },
+    "settings.textVerticalPixelCrop"() {
+      this.invalidateHitGrid();
+      this.redraw();
+    },
+    "settings.textHorizontalPixelAlign"() {
+      this.invalidateHitGrid();
+      this.redraw();
+    },
 
     registeredComponents() {
       if (

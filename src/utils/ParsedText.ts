@@ -4,10 +4,20 @@ interface TextFragment {
   width: number;
 }
 
+export interface TextLineMetrics {
+  fragments: TextFragment[];
+  advanceWidth: number;
+  pixelMinX: number;
+  pixelMaxX: number;
+  pixelAscent: number;
+  pixelDescent: number;
+  hasPixels: boolean;
+}
+
 const COLOR_CHAR = "§";
 
 export class ParsedText {
-  private fragments: TextFragment[][] = [];
+  private lines: TextLineMetrics[] = [];
   public readonly width: number = 0;
 
   constructor(
@@ -17,23 +27,57 @@ export class ParsedText {
     context: CanvasRenderingContext2D,
   ) {
     const lines = rawText.split("\n");
-    const fragmentsLines: TextFragment[][] = [];
+    const lineMetrics: TextLineMetrics[] = [];
 
     let lastColor = defaultColor;
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i].trim();
       const fragments: TextFragment[] = [];
+      let cursorX = 0;
+      let pixelMinX = Number.POSITIVE_INFINITY;
+      let pixelMaxX = Number.NEGATIVE_INFINITY;
+      let pixelAscent = 0;
+      let pixelDescent = 0;
+      let hasPixels = false;
+
+      const pushFragment = (text: string, color: string) => {
+        const metrics = context.measureText(text);
+        const fragmentWidth = metrics.width;
+        fragments.push({
+          text,
+          color,
+          width: fragmentWidth,
+        });
+
+        const fragmentHasPixels =
+          metrics.actualBoundingBoxLeft > 0 ||
+          metrics.actualBoundingBoxRight > 0 ||
+          metrics.actualBoundingBoxAscent > 0 ||
+          metrics.actualBoundingBoxDescent > 0;
+
+        if (fragmentHasPixels) {
+          hasPixels = true;
+          const left = cursorX - metrics.actualBoundingBoxLeft;
+          const right = cursorX + metrics.actualBoundingBoxRight;
+          if (left < pixelMinX) pixelMinX = left;
+          if (right > pixelMaxX) pixelMaxX = right;
+          if (metrics.actualBoundingBoxAscent > pixelAscent) {
+            pixelAscent = metrics.actualBoundingBoxAscent;
+          }
+          if (metrics.actualBoundingBoxDescent > pixelDescent) {
+            pixelDescent = metrics.actualBoundingBoxDescent;
+          }
+        }
+
+        cursorX += fragmentWidth;
+      };
 
       let colorIndex = line.indexOf(COLOR_CHAR);
       while (colorIndex !== -1) {
         if (colorIndex === line.length - 1) break;
 
         const preColor = line.substring(0, colorIndex);
-        fragments.push({
-          text: preColor,
-          color: lastColor,
-          width: context.measureText(preColor).width,
-        });
+        pushFragment(preColor, lastColor);
 
         const colorString = line.substring(colorIndex + 1, colorIndex + 2);
         line = line.substring(colorIndex + 2);
@@ -42,29 +86,50 @@ export class ParsedText {
         colorIndex = line.indexOf(COLOR_CHAR);
       }
 
-      fragments.push({
-        text: line,
-        color: lastColor,
-        width: context.measureText(line).width,
-      });
+      pushFragment(line, lastColor);
 
-      fragmentsLines[i] = fragments;
+      lineMetrics[i] = {
+        fragments,
+        advanceWidth: cursorX,
+        pixelMinX: hasPixels ? pixelMinX : 0,
+        pixelMaxX: hasPixels ? pixelMaxX : 0,
+        pixelAscent,
+        pixelDescent,
+        hasPixels,
+      };
     }
 
-    this.fragments = fragmentsLines;
+    this.lines = lineMetrics;
     this.width = Math.max(
-      ...this.fragments.map((l) => {
-        return l.reduce((sum, f) => sum + f.width, 0);
-      }),
+      0,
+      ...this.lines.map((line) => line.advanceWidth),
     );
   }
 
   public getLineCount(): number {
-    return this.fragments.length;
+    return this.lines.length;
   }
 
   public getLine(line: number): TextFragment[] {
-    return this.fragments[line];
+    return this.lines[line]?.fragments || [];
+  }
+
+  public getLineAdvanceWidth(line: number): number {
+    return this.lines[line]?.advanceWidth || 0;
+  }
+
+  public getLineMetrics(line: number): TextLineMetrics {
+    return (
+      this.lines[line] || {
+        fragments: [],
+        advanceWidth: 0,
+        pixelMinX: 0,
+        pixelMaxX: 0,
+        pixelAscent: 0,
+        pixelDescent: 0,
+        hasPixels: false,
+      }
+    );
   }
 
   private getColor(colorString: string): string | null {

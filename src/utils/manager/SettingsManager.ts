@@ -6,6 +6,8 @@ export interface GeneralSettings {
   zoom: number;
   snapEnabled: boolean;
   projectName: string;
+  textVerticalPixelCrop: boolean;
+  textHorizontalPixelAlign: boolean;
 }
 
 export const settings = reactive({
@@ -14,4 +16,6 @@ export const settings = reactive({
   zoom: 2,
   snapEnabled: true,
   projectName: "Starter",
+  textVerticalPixelCrop: true,
+  textHorizontalPixelAlign: false,
 } as GeneralSettings);

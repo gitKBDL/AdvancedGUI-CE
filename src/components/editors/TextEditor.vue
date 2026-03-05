@@ -57,6 +57,17 @@
       v-model:font="component.font"
       v-model:size="component.size"
     ></font-editor>
+    <div class="label heading">{{ t("text.pixelBounds", "Pixel bounds") }}</div>
+    <div class="settings-row">
+      <span class="label">{{ t("text.verticalCrop", "Vertical crop") }}</span>
+      <input type="checkbox" v-model="settings.textVerticalPixelCrop" />
+    </div>
+    <div class="settings-row">
+      <span class="label">{{
+        t("text.horizontalAlignCrop", "Horizontal align by pixels")
+      }}</span>
+      <input type="checkbox" v-model="settings.textHorizontalPixelAlign" />
+    </div>
     <div class="label heading">{{ t("text.position", "Position") }}</div>
     <div class="settings-row">
       <div class="input-box">
@@ -75,10 +86,11 @@ import { Text } from "@/utils/components/Text";
 import FontEditor from "@/components/FontEditor.vue";
 import ColorInput from "../ColorInput.vue";
 import { t } from "@/utils/i18n";
+import { settings } from "@/utils/manager/SettingsManager";
 
 export default defineComponent({
   data() {
-    return { t };
+    return { t, settings };
   },
 
   components: { FontEditor, ColorInput },
