@@ -177,11 +177,7 @@
           <div class="cardFooter">
             <div class="name">
               <h3>{{ project.name }}</h3>
-              <span>{{
-                ((JSON.stringify(project).length * 2) / 1000 / 1000).toFixed(
-                  2,
-                ) + " MB"
-              }}</span>
+              <span>{{ projectSizeMB(project).toFixed(2) + " MB" }}</span>
             </div>
             <div class="openCta">
               <span class="material-icons">launch</span>
@@ -332,6 +328,17 @@ import {
 } from "@/utils/i18n";
 import { MAX_IMPORT_FILE_BYTES } from "@/utils/ProjectValidation";
 
+const projectSizeCache = new WeakMap<Project, number>();
+
+function getProjectSizeMB(project: Project) {
+  const cachedSize = projectSizeCache.get(project);
+  if (cachedSize !== undefined) return cachedSize;
+
+  const nextSize = (JSON.stringify(project).length * 2) / 1000 / 1000;
+  projectSizeCache.set(project, nextSize);
+  return nextSize;
+}
+
 export default defineComponent({
   data() {
     return {
@@ -347,21 +354,34 @@ export default defineComponent({
       showDevMode: false,
       language: vueRef(language),
       languages: availableLanguages.value,
+      thumbnailRefreshRaf: null as number | null,
     };
   },
 
   components: { AbsoluteMenu, Modal },
 
+  mounted() {
+    this.scheduleThumbnailRefresh();
+  },
+
+  unmounted() {
+    if (this.thumbnailRefreshRaf !== null) {
+      window.cancelAnimationFrame(this.thumbnailRefreshRaf);
+      this.thumbnailRefreshRaf = null;
+    }
+  },
+
   computed: {
     summedSize(): number {
-      return this.projects
-        .map((p) => (JSON.stringify(p).length * 2) / 1000 / 1000)
-        .reduce((i, j) => i + j, 0);
+      return this.projects.reduce(
+        (total, project) => total + this.projectSizeMB(project),
+        0,
+      );
     },
 
     filteredProjects(): Project[] {
       const query = this.searchQuery.trim().toLowerCase();
-      if (!query) return this.projects;
+      if (!query) return [...this.projects];
       return this.projects.filter((project) =>
         project.name.toLowerCase().includes(query),
       );
@@ -369,24 +389,52 @@ export default defineComponent({
   },
 
   watch: {
-    projects: {
-      handler() {
-        setTimeout(() => {
-          this.projects.forEach(async (project) => {
-            const elem = this.$refs[`proj#${project.name}`] as HTMLElement;
-            if (elem)
-              elem.style.backgroundImage = `url(${await getThumbnail(
-                project.name,
-              )})`;
-          });
-        }, 30);
-      },
-      immediate: true,
-      deep: true,
+    filteredProjects() {
+      this.scheduleThumbnailRefresh();
     },
   },
 
   methods: {
+    projectSizeMB(project: Project) {
+      return getProjectSizeMB(project);
+    },
+
+    getProjectCardRef(projectName: string): HTMLElement | undefined {
+      const refValue = this.$refs[`proj#${projectName}`] as
+        | HTMLElement
+        | HTMLElement[]
+        | undefined;
+
+      if (!refValue) return undefined;
+      return Array.isArray(refValue) ? refValue[0] : refValue;
+    },
+
+    async applyThumbnail(projectName: string) {
+      const elem = this.getProjectCardRef(projectName);
+      if (!elem) return;
+
+      const thumbnail = await getThumbnail(projectName);
+      const nextBackground = thumbnail ? `url(${thumbnail})` : "";
+      if (elem.style.backgroundImage !== nextBackground) {
+        elem.style.backgroundImage = nextBackground;
+      }
+    },
+
+    refreshVisibleThumbnails() {
+      this.filteredProjects.forEach((project) => {
+        void this.applyThumbnail(project.name);
+      });
+    },
+
+    scheduleThumbnailRefresh() {
+      if (this.thumbnailRefreshRaf !== null) return;
+
+      this.thumbnailRefreshRaf = window.requestAnimationFrame(() => {
+        this.thumbnailRefreshRaf = null;
+        this.refreshVisibleThumbnails();
+      });
+    },
+
     triggerFileSelector() {
       (this.$refs.fileDownload as HTMLElement).click();
     },

@@ -1,6 +1,7 @@
 import { Component } from "../components/Component";
 import {
   getParentComponent,
+  invalidateParentComponentCache,
   isComponentLocked,
 } from "../manager/ComponentManager";
 import { redo, undo } from "../manager/HistoryManager";
@@ -111,6 +112,7 @@ function deleteSelectedComponent() {
 
   const index = parent.findIndex((c) => c.id == selection.value?.component.id);
   parent.splice(index, 1);
+  invalidateParentComponentCache();
   updateSelection({ value: null });
 }
 

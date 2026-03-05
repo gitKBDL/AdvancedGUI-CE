@@ -16,6 +16,17 @@ export const invisibleIDs = ref([] as string[]);
 export const components: {
   [key: string]: Component;
 } = {};
+const invisibleIDSet = new Set<string>();
+
+type ParentComponent = ListItemGroup<Component> & Component;
+const parentComponentCache = new WeakMap<
+  Component,
+  {
+    parent: ParentComponent | null;
+    version: number;
+  }
+>();
+let parentComponentCacheVersion = 0;
 
 function randomString(length: number) {
   let result = "";
@@ -32,6 +43,29 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function syncInvisibleSet() {
+  invisibleIDSet.clear();
+  invisibleIDs.value.forEach((id) => invisibleIDSet.add(id));
+}
+
+function setCachedParent(component: Component, parent: ParentComponent | null) {
+  parentComponentCache.set(component, {
+    parent,
+    version: parentComponentCacheVersion,
+  });
+}
+
+function cacheGroupChildren(group: ParentComponent) {
+  group.getItems().forEach((child) => setCachedParent(child, group));
+}
+
+function findParentComponent(component: Component): ParentComponent | undefined {
+  return Object.values(components).find(
+    (comp): comp is ParentComponent =>
+      comp.isGroup() && comp.getItems().some((child) => child === component),
+  );
+}
+
 export function generateUniqueID() {
   let id = randomString(8);
   while (components[id]) id = randomString(8);
@@ -40,7 +74,32 @@ export function generateUniqueID() {
 }
 
 export function isInvisible(id: string) {
-  return invisibleIDs.value.includes(id);
+  return invisibleIDSet.has(id);
+}
+
+export function setInvisibleIDs(ids: string[]) {
+  invisibleIDs.value = ids;
+  syncInvisibleSet();
+}
+
+export function addInvisibleID(id: string) {
+  if (invisibleIDSet.has(id)) return;
+  invisibleIDSet.add(id);
+  invisibleIDs.value.push(id);
+}
+
+export function addInvisibleIDs(ids: string[]) {
+  ids.forEach((id) => addInvisibleID(id));
+}
+
+export function removeInvisibleID(id: string) {
+  if (!invisibleIDSet.delete(id)) return;
+  const index = invisibleIDs.value.indexOf(id);
+  if (index !== -1) invisibleIDs.value.splice(index, 1);
+}
+
+export function invalidateParentComponentCache() {
+  parentComponentCacheVersion += 1;
 }
 
 export function toggleVis(id: string) {
@@ -50,10 +109,8 @@ export function toggleVis(id: string) {
       .forEach(toggleVis);
   }
 
-  const index = invisibleIDs.value.indexOf(id);
-
-  if (index != -1) invisibleIDs.value.splice(index, 1);
-  else invisibleIDs.value.push(id);
+  if (isInvisible(id)) removeInvisibleID(id);
+  else addInvisibleID(id);
 }
 
 function _reassignIDs(
@@ -97,10 +154,17 @@ export function traverseComponent(
 export function getParentComponent(
   component: Component,
 ): (ListItemGroup<Component> & Component) | undefined {
-  return Object.values(components).find(
-    (comp) =>
-      comp.isGroup() && comp.getItems().some((c) => c.id == component.id),
-  ) as (ListItemGroup<Component> & Component) | undefined;
+  const cached = parentComponentCache.get(component);
+  if (cached && cached.version === parentComponentCacheVersion) {
+    if (!cached.parent) return undefined;
+    if (cached.parent.getItems().some((child) => child === component)) {
+      return cached.parent;
+    }
+  }
+
+  const parent = findParentComponent(component);
+  setCachedParent(component, parent || null);
+  return parent;
 }
 
 export function isComponentLocked(component: Component): boolean {
@@ -118,13 +182,17 @@ export function isComponentLocked(component: Component): boolean {
 export function registerComponent(component: Component) {
   if (component.id == "-") component.setId(generateUniqueID());
   components[component.id] = component;
+  parentComponentCache.delete(component);
+  if (component.isGroup()) {
+    cacheGroupChildren(component as ParentComponent);
+  }
 
   if (
     component.id.includes("#") &&
-    invisibleIDs.value.includes(component.id.split("#")[0]) &&
-    !invisibleIDs.value.includes(component.id)
+    isInvisible(component.id.split("#")[0]) &&
+    !isInvisible(component.id)
   ) {
-    invisibleIDs.value.push(component.id);
+    addInvisibleID(component.id);
   }
 
   return component;
@@ -132,6 +200,10 @@ export function registerComponent(component: Component) {
 
 export function unregisterComponent(component: Component) {
   delete components[component.id];
+  parentComponentCache.delete(component);
+  if (component.isGroup()) {
+    component.getItems().forEach((child) => parentComponentCache.delete(child));
+  }
 
   if (!component.id.includes("#")) {
     Object.values(components)
@@ -177,3 +249,5 @@ export function componentFromJson(
     return null;
   }
 }
+
+syncInvisibleSet();

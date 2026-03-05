@@ -3,6 +3,7 @@ import { Component } from "../components/Component";
 import {
   components as registeredComponents,
   invisibleIDs,
+  setInvisibleIDs,
 } from "./ComponentManager";
 import { componentTree } from "./WorkspaceManager";
 
@@ -110,7 +111,7 @@ function remapInvisibleReferences(oldId: string, newId: string) {
     next.push(mapped);
   });
 
-  invisibleIDs.value = next;
+  setInvisibleIDs(next);
 }
 
 function collectTreeComponentRefs() {

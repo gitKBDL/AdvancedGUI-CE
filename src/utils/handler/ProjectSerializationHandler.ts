@@ -2,8 +2,10 @@ import { GroupComponent } from "../components/GroupComponent";
 import { Image } from "../components/Image";
 import { Template } from "../components/Template";
 import {
+  addInvisibleIDs,
   invisibleIDs,
   JsonObject,
+  setInvisibleIDs,
   traverseComponent,
   unregisterComponent,
 } from "../manager/ComponentManager";
@@ -233,7 +235,7 @@ export function importComponentFomJson(componentProject: Project) {
 
   pauseRendering.value = true;
   componentProject = checkForUpdate(componentProject)[0];
-  invisibleIDs.value.push(...componentProject.invisible);
+  addInvisibleIDs(componentProject.invisible);
   addJsonComponentsToRoot(componentProject.componentTree.components, false);
   pauseRendering.value = false;
 }
@@ -267,7 +269,7 @@ export async function loadProjectFromJson(
   settings.width = jsonObj.width;
   settings.height = jsonObj.height;
 
-  invisibleIDs.value = jsonObj.invisible;
+  setInvisibleIDs([...jsonObj.invisible]);
 
   addJsonComponentsToRoot(jsonObj.componentTree.components, false);
 

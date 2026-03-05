@@ -77,6 +77,8 @@ type MoveTargets = {
   spacing: BoundingBox[];
 };
 
+const HIT_GRID_CELL_SIZE = 256;
+
 export default defineComponent({
   data() {
     return {
@@ -115,6 +117,7 @@ export default defineComponent({
       redrawQueued: false,
       redrawRafId: null as number | null,
       moveTargetsCache: null as MoveTargets | null,
+      hitGrid: null as Map<string, Component[]> | null,
     };
   },
 
@@ -145,6 +148,7 @@ export default defineComponent({
     }
     redrawFunction = null;
     this.moveTargetsCache = null;
+    this.hitGrid = null;
   },
 
   computed: {
@@ -173,6 +177,7 @@ export default defineComponent({
     componentTree: {
       deep: true,
       handler() {
+        this.invalidateHitGrid();
         this.redraw();
       },
     },
@@ -190,10 +195,12 @@ export default defineComponent({
 
     "settings.height"() {
       this.adjustHeight();
+      this.invalidateHitGrid();
       setTimeout(() => this.redraw(), 10);
     },
 
     "settings.width"() {
+      this.invalidateHitGrid();
       setTimeout(() => this.redraw(), 10);
     },
     "settings.snapEnabled"() {
@@ -210,12 +217,14 @@ export default defineComponent({
       )
         updateSelection({ value: null });
 
+      this.invalidateHitGrid();
       this.redraw();
     },
 
     invisibleIDs: {
       deep: true,
       handler() {
+        this.invalidateHitGrid();
         this.redraw();
       },
     },
@@ -423,6 +432,7 @@ export default defineComponent({
 
       parent.splice(index === -1 ? 0 : index, 0, duplicate);
       updateSelection({ value: duplicate });
+      this.invalidateHitGrid();
       return duplicate;
     },
 
@@ -492,6 +502,62 @@ export default defineComponent({
 
     invalidateMoveTargetsCache() {
       this.moveTargetsCache = null;
+    },
+
+    invalidateHitGrid() {
+      this.hitGrid = null;
+    },
+
+    getHitGridKey(cellX: number, cellY: number) {
+      return `${cellX}|${cellY}`;
+    },
+
+    addHitGridEntry(
+      grid: Map<string, Component[]>,
+      cellX: number,
+      cellY: number,
+      component: Component,
+    ) {
+      const key = this.getHitGridKey(cellX, cellY);
+      const entries = grid.get(key);
+      if (entries) {
+        entries.push(component);
+      } else {
+        grid.set(key, [component]);
+      }
+    },
+
+    buildHitGrid() {
+      const grid = new Map<string, Component[]>();
+
+      this.componentTree.forEach((component) => {
+        if (isInvisible(component.id)) return;
+        const box = component.getBoundingBox();
+        if (box === BoundingBox.EMPTY) return;
+        if (box.width <= 0 || box.height <= 0) return;
+
+        const startX = Math.floor(box.x / HIT_GRID_CELL_SIZE);
+        const endX = Math.floor((box.x + box.width) / HIT_GRID_CELL_SIZE);
+        const startY = Math.floor(box.y / HIT_GRID_CELL_SIZE);
+        const endY = Math.floor((box.y + box.height) / HIT_GRID_CELL_SIZE);
+
+        for (let cellX = startX; cellX <= endX; cellX++) {
+          for (let cellY = startY; cellY <= endY; cellY++) {
+            this.addHitGridEntry(grid, cellX, cellY, component);
+          }
+        }
+      });
+
+      this.hitGrid = grid;
+    },
+
+    getHitGridCandidates(point: Point): Component[] {
+      if (!this.hitGrid) this.buildHitGrid();
+
+      const cellX = Math.floor(point.x / HIT_GRID_CELL_SIZE);
+      const cellY = Math.floor(point.y / HIT_GRID_CELL_SIZE);
+      const key = this.getHitGridKey(cellX, cellY);
+      return this.hitGrid?.get(key) || this.componentTree;
     },
 
     cacheMoveTargets(component: Component) {
@@ -594,11 +660,12 @@ export default defineComponent({
 
       this.modifying = null;
       this.invalidateMoveTargetsCache();
+      this.invalidateHitGrid();
       if (shouldUpdateHistory) updateHistory();
     },
 
     getElementAt(point: Point) {
-      return this.componentTree.find((element) =>
+      return this.getHitGridCandidates(point).find((element) =>
         element.getBoundingBox().isInside(point),
       );
     },
@@ -694,6 +761,7 @@ export default defineComponent({
 
       this.markAsModifiedIfNeeded(newBounds);
       this.modifying.component.modify(newBounds, this.modifying.singleAxis);
+      this.invalidateHitGrid();
     },
 
     shouldUseResizeCursor(handler: ReturnType<typeof getHanderAt>) {
@@ -742,14 +810,15 @@ export default defineComponent({
 
       this.lastMove = Date.now();
       const point = this.getCursorPosition(event);
-      const hovered = this.getElementAt(point);
 
       if (this.modifying) {
         this.handleActiveMove(event, point);
-      } else {
-        this.handleHoverMove(point, hovered);
+        this.redraw();
+        return;
       }
 
+      const hovered = this.getElementAt(point);
+      this.handleHoverMove(point, hovered);
       this.redraw();
     },
 

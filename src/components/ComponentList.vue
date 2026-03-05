@@ -128,7 +128,11 @@
 import { defineComponent, reactive } from "vue";
 import DragZone from "./DragZone.vue";
 import { ListItem, ListItemGroup } from "@/utils/ListItem";
-import { toggleVis, invisibleIDs } from "@/utils/manager/ComponentManager";
+import {
+  invalidateParentComponentCache,
+  toggleVis,
+  invisibleIDs,
+} from "@/utils/manager/ComponentManager";
 import { vueRef } from "../utils/VueRef";
 import { t } from "@/utils/i18n";
 
@@ -224,6 +228,7 @@ export default defineComponent({
         this.treeState.dragElementsList?.splice(oldIndex, 1);
 
       this.components.splice(index, 0, this.treeState.dragElement);
+      invalidateParentComponentCache();
     },
 
     openMenu(elem: ListItem, ev: MouseEvent) {
