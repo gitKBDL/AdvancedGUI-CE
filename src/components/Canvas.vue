@@ -63,6 +63,15 @@ type SpacingCandidates = {
   bottom: SpacingGuideY | null;
 };
 
+type MoveTargets = {
+  componentId: string;
+  snap: {
+    x: number[];
+    y: number[];
+  };
+  spacing: BoundingBox[];
+};
+
 export default defineComponent({
   data() {
     return {
@@ -98,6 +107,9 @@ export default defineComponent({
         y: [] as number[],
       },
       spacingGuides: [] as SpacingGuide[],
+      redrawQueued: false,
+      redrawRafId: null as number | null,
+      moveTargetsCache: null as MoveTargets | null,
     };
   },
 
@@ -112,11 +124,17 @@ export default defineComponent({
 
     canvas.imageSmoothingEnabled = false;
 
-    this.redraw();
+    this.redraw(true);
   },
 
   unmounted() {
+    if (this.redrawRafId !== null) {
+      window.cancelAnimationFrame(this.redrawRafId);
+      this.redrawRafId = null;
+      this.redrawQueued = false;
+    }
     redrawFunction = null;
+    this.moveTargetsCache = null;
   },
 
   computed: {
@@ -162,11 +180,11 @@ export default defineComponent({
 
     "settings.height"() {
       this.adjustHeight();
-      setTimeout(this.redraw, 10);
+      setTimeout(() => this.redraw(), 10);
     },
 
     "settings.width"() {
-      setTimeout(this.redraw, 10);
+      setTimeout(() => this.redraw(), 10);
     },
     "settings.snapEnabled"() {
       if (!this.settings.snapEnabled) {
@@ -210,7 +228,27 @@ export default defineComponent({
       }px`;
     },
 
-    redraw() {
+    redraw(force = false) {
+      if (force) {
+        if (this.redrawRafId !== null) {
+          window.cancelAnimationFrame(this.redrawRafId);
+          this.redrawRafId = null;
+          this.redrawQueued = false;
+        }
+        this.renderCanvas();
+        return;
+      }
+
+      if (this.redrawQueued) return;
+      this.redrawQueued = true;
+      this.redrawRafId = window.requestAnimationFrame(() => {
+        this.redrawQueued = false;
+        this.redrawRafId = null;
+        this.renderCanvas();
+      });
+    },
+
+    renderCanvas() {
       if (this.pauseRendering) return;
 
       const canvas = (this.$refs.canvas as HTMLCanvasElement).getContext("2d", {
@@ -442,6 +480,28 @@ export default defineComponent({
       return { modifier, icon, singleAxis };
     },
 
+    invalidateMoveTargetsCache() {
+      this.moveTargetsCache = null;
+    },
+
+    cacheMoveTargets(component: Component) {
+      this.moveTargetsCache = {
+        componentId: component.id,
+        snap: this.collectSnapTargets(component),
+        spacing: this.collectSpacingTargets(component),
+      };
+    },
+
+    getMoveTargets(component: Component): MoveTargets {
+      if (
+        !this.moveTargetsCache ||
+        this.moveTargetsCache.componentId !== component.id
+      ) {
+        this.cacheMoveTargets(component);
+      }
+      return this.moveTargetsCache;
+    },
+
     startModification(
       event: MouseEvent,
       point: Point,
@@ -468,7 +528,11 @@ export default defineComponent({
 
       if (setup.icon !== "move") {
         this.modifying.component.startResize(this.modifying.elementStartPosition);
+        this.invalidateMoveTargetsCache();
+        return;
       }
+
+      this.cacheMoveTargets(selectedComponent);
     },
 
     onClickDown(event: MouseEvent) {
@@ -517,6 +581,7 @@ export default defineComponent({
       }
 
       this.modifying = null;
+      this.invalidateMoveTargetsCache();
     },
 
     getElementAt(point: Point) {
@@ -570,6 +635,7 @@ export default defineComponent({
       this.modifying.component = duplicate;
       this.modifying.elementStartPosition = duplicate.getBoundingBox();
       this.modifying.duplicated = true;
+      this.cacheMoveTargets(duplicate);
     },
 
     applyMoveBehavior(event: MouseEvent, bounds: BoundingBox) {
@@ -670,6 +736,8 @@ export default defineComponent({
       } else {
         this.handleHoverMove(point, hovered);
       }
+
+      this.redraw();
     },
 
     clearGuides() {
@@ -787,7 +855,8 @@ export default defineComponent({
       }
 
       const snapThreshold = 6;
-      const { x: xTargets, y: yTargets } = this.collectSnapTargets(component);
+      const targets = this.getMoveTargets(component);
+      const { x: xTargets, y: yTargets } = targets.snap;
       const snappedX = this.findClosestSnap(
         xTargets,
         this.getSnapAnchors(bounds.x, bounds.width),
@@ -970,7 +1039,8 @@ export default defineComponent({
         bottom: null,
       };
 
-      for (const box of this.collectSpacingTargets(component)) {
+      const targets = this.getMoveTargets(component);
+      for (const box of targets.spacing) {
         this.updateHorizontalSpacingCandidates(bounds, box, candidates);
         this.updateVerticalSpacingCandidates(bounds, box, candidates);
       }
