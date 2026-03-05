@@ -34,7 +34,7 @@
     <div v-else class="infoScreen">
       <p>
         <span class="material-icons">info</span>
-        <span v-html="loading.info"> </span>
+        <span class="infoText">{{ loading.info }}</span>
       </p>
       <div class="action-row">
         <div class="btn close" @click="loading.info = null">
@@ -158,6 +158,10 @@ export default defineComponent({
       display: flex;
       align-items: center;
       margin: 0 0 20px;
+    }
+
+    .infoText {
+      white-space: pre-line;
     }
 
     .material-icons {

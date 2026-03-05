@@ -13,6 +13,7 @@ import { migrate, VERSION } from "./UpdateManager";
 import { error, info, loading } from "./WorkspaceManager";
 import { t } from "../i18n";
 import { ensureUniqueProjectName, normalizeProjectName } from "../ProjectName";
+import { sanitizeImportedProjectData } from "../ProjectValidation";
 
 export const projectExplorerOpen = ref(true);
 
@@ -56,14 +57,14 @@ async function loadStoredProjectByName(name: string): Promise<Project | null> {
 
   if (typeof storedProject === "string") {
     try {
-      return JSON.parse(storedProject) as Project;
+      return sanitizeImportedProjectData(JSON.parse(storedProject));
     } catch {
       return null;
     }
   }
 
   if (storedProject && typeof storedProject === "object") {
-    return storedProject as Project;
+    return sanitizeImportedProjectData(storedProject);
   }
 
   return null;
@@ -164,52 +165,65 @@ export async function saveCurrentProject() {
   unsavedChange.value = false;
 }
 
-export async function importProject(data: Project) {
+export async function importProject(data: unknown) {
   // lastOpendProjectName = project.name;
   // projectExplorerOpen.value = false;
 
   // clearHistory();
   // unsavedChange.value = false; //TODO
 
-  if (data.version && data.name) {
-    data.name = normalizeProjectName(
-      data.name,
-      t("project.unnamed", "Unnamed"),
-    );
-    data.name = ensureUniqueProjectName(
-      data.name,
-      projects.value.map((project) => project.name),
-    );
-
-    lastOpendProjectName = data.name;
-    loading(true);
-    try {
-      await loadProjectFromJson(data, false);
-    } finally {
-      loading(false);
-    }
-
-    projects.value.splice(0, 0, data);
-    await localforage.setItem(`project/${data.name}`, JSON.stringify(data));
-
-    await updateProjectNames();
-
-    await saveCurrentProject();
-  } else {
+  const validatedProject = sanitizeImportedProjectData(data);
+  if (!validatedProject) {
     error(
       t(
         "project.invalid",
         "This does not look like an AdvancedGUI project file.",
       ),
     );
+    return;
   }
+
+  validatedProject.name = normalizeProjectName(
+    validatedProject.name,
+    t("project.unnamed", "Unnamed"),
+  );
+  validatedProject.name = ensureUniqueProjectName(
+    validatedProject.name,
+    projects.value.map((project) => project.name),
+  );
+
+  lastOpendProjectName = validatedProject.name;
+  loading(true);
+  try {
+    await loadProjectFromJson(validatedProject, false);
+  } catch (exc) {
+    error(
+      t(
+        "project.importError",
+        "Failed to import project: {message}",
+      ).replace("{message}", `${(exc as Error)?.message || exc}`),
+    );
+    return;
+  } finally {
+    loading(false);
+  }
+
+  projects.value.splice(0, 0, validatedProject);
+  await localforage.setItem(
+    `project/${validatedProject.name}`,
+    JSON.stringify(validatedProject),
+  );
+
+  await updateProjectNames();
+
+  await saveCurrentProject();
 }
 
 export async function deleteProject(name: string) {
-  projects.value.splice(
-    projects.value.findIndex((p) => p.name == name),
-    1,
-  );
+  const index = projects.value.findIndex((p) => p.name == name);
+  if (index !== -1) {
+    projects.value.splice(index, 1);
+  }
 
   await localforage.removeItem(`project/${name}`);
   await localforage.removeItem(`thumbnail/${name}`);
@@ -223,7 +237,9 @@ export async function updateProject(project: Project) {
   await localforage.setItem(`project/${project.name}`, JSON.stringify(project));
 
   const index = projects.value.findIndex((p) => p.name == lastOpendProjectName);
-  projects.value.splice(index, 1, project);
+  if (index !== -1) {
+    projects.value.splice(index, 1, project);
+  }
 }
 
 function migrateAndPersistProject(project: Project) {
@@ -235,7 +251,7 @@ function migrateAndPersistProject(project: Project) {
   info(
     t(
       "update.migrated",
-      `Your savepoint was still on format-version <b>${oldVersion}</b> and got migrated to the new format-version <b>${VERSION}</b>`,
+      `Your savepoint was still on format-version ${oldVersion} and got migrated to the new format-version ${VERSION}`,
     )
       .replace("{old}", `${oldVersion}`)
       .replace("{new}", VERSION),
@@ -262,6 +278,14 @@ export async function openProject(project: Project) {
   try {
     await loadProjectFromJson(project, false);
     projectExplorerOpen.value = false;
+  } catch (exc) {
+    error(
+      t(
+        "project.openError",
+        "Failed to open project: {message}",
+      ).replace("{message}", `${(exc as Error)?.message || exc}`),
+    );
+    projectExplorerOpen.value = true;
   } finally {
     loading(false);
   }

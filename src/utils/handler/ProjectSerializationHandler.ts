@@ -204,7 +204,7 @@ function checkForUpdate(project: Project): [Project, boolean] {
     info(
       t(
         "update.migrated",
-        `Your savepoint was still on format-version <b>${oldVersion}</b> and got migrated to the new format-version <b>${VERSION}</b>`,
+        `Your savepoint was still on format-version ${oldVersion} and got migrated to the new format-version ${VERSION}`,
       )
         .replace("{old}", oldVersion)
         .replace("{new}", VERSION),

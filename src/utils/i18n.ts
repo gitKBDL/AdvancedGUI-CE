@@ -193,7 +193,7 @@ const translations: Record<Language, Record<string, string>> = {
 
     "componentList.add": "Добавить компонент",
     "update.migrated":
-      "Ваш проект был в формате <b>{old}</b> и обновлён до версии <b>{new}</b>",
+      "Ваш проект был в формате {old} и обновлён до версии {new}",
     "placeholder.placeholder": "Плейсхолдер",
     "placeholder.compType": "Тип сравнения",
     "placeholder.textEq": "Текст совпадает",
@@ -330,6 +330,9 @@ const translations: Record<Language, Record<string, string>> = {
     "componentList.hide": "Скрыть",
 
     "project.invalid": "Это не похоже на файл проекта AdvancedGUI.",
+    "project.importError": "Не удалось импортировать проект: {message}",
+    "project.openError": "Не удалось открыть проект: {message}",
+    "project.fileTooLarge": "Файл проекта слишком большой для безопасного импорта.",
     "project.defaultName": "Стартовый",
     "project.unnamed": "Без названия",
     "project.unnamedNumber": "{name} {num}",

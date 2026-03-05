@@ -34,7 +34,8 @@ const baseUrl = import.meta.env.BASE_URL;
 
 export async function unregisterFont(fontName: string) {
   delete fonts[fontName];
-  regFonts.splice(regFonts.indexOf(fontName), 1);
+  const index = regFonts.indexOf(fontName);
+  if (index !== -1) regFonts.splice(index, 1);
 }
 
 export async function registerFontBase64(dataUrl: string, fontName: string) {

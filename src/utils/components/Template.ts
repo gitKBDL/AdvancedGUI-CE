@@ -25,14 +25,8 @@ export function transpileToGroup(
       for (const entry of data) {
         let value = entry.value;
         if (typeof value == "number") {
-          json = json.replace(
-            new RegExp(`"#${entry.name}"`, "g"),
-            value.toString(),
-          );
-          json = json.replace(
-            new RegExp(`#${entry.name}`, "g"),
-            value.toString(),
-          );
+          json = json.replaceAll(`"#${entry.name}"`, value.toString());
+          json = json.replaceAll(`#${entry.name}`, value.toString());
         } else {
           if (/#[0-9A-F]{6},((1(\.0)?)|0\.[0-9]+|0)/g.test(value.toUpperCase()))
             value = hexToRgba(
@@ -43,7 +37,7 @@ export function transpileToGroup(
           if (/#[0-9A-F]{6}/.test(value.toUpperCase()))
             value = hexToRgba(value, 1);
 
-          json = json.replace(new RegExp(`#${entry.name}`, "g"), value);
+          json = json.replaceAll(`#${entry.name}`, value);
         }
       }
       return json;

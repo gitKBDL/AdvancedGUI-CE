@@ -28,6 +28,10 @@ function randomString(length: number) {
   return result;
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function generateUniqueID() {
   let id = randomString(8);
   while (components[id]) id = randomString(8);
@@ -148,9 +152,11 @@ export function reassignIDs(
   _reassignIDs(jsonObj, idGernerator, idMap);
 
   let json = JSON.stringify(jsonObj);
-  Object.keys(idMap).forEach(
-    (orgId) => (json = json.replace(new RegExp(`${orgId}`, "g"), idMap[orgId])),
-  );
+  Object.keys(idMap)
+    .sort((left, right) => right.length - left.length)
+    .forEach((orgId) => {
+      json = json.replace(new RegExp(escapeRegExp(orgId), "g"), idMap[orgId]);
+    });
 
   return JSON.parse(json);
 }

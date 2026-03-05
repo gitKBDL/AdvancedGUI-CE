@@ -318,7 +318,7 @@ import {
   projects,
 } from "../utils/manager/ProjectManager";
 import { VERSION } from "../utils/manager/UpdateManager";
-import { info, loading } from "../utils/manager/WorkspaceManager";
+import { error, info } from "../utils/manager/WorkspaceManager";
 import { Project } from "../utils/Project";
 import { vueRef } from "../utils/VueRef";
 import AbsoluteMenu from "./AbsoluteMenu.vue";
@@ -330,6 +330,7 @@ import {
   t,
   type Language,
 } from "@/utils/i18n";
+import { MAX_IMPORT_FILE_BYTES } from "@/utils/ProjectValidation";
 
 export default defineComponent({
   data() {
@@ -392,15 +393,34 @@ export default defineComponent({
 
     async checkForUpload() {
       const selector = this.$refs.fileDownload as HTMLInputElement;
+      if (!selector.files?.length) return;
 
-      if (selector.files?.length) {
-        const file = selector.files[0];
-        loading(true);
+      const file = selector.files[0];
 
-        const project = JSON.parse(await file.text()) as Project;
-        await importProject(project);
+      try {
+        if (file.size > MAX_IMPORT_FILE_BYTES) {
+          error(
+            t(
+              "project.fileTooLarge",
+              "Project file is too large to import safely.",
+            ),
+          );
+          return;
+        }
 
-        loading(false);
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(await file.text());
+        } catch {
+          error(
+            t("project.invalid", "This does not look like an AdvancedGUI project file."),
+          );
+          return;
+        }
+
+        await importProject(parsed);
+      } finally {
+        selector.value = "";
       }
     },
 
