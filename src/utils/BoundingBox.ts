@@ -2,7 +2,10 @@ import { devMode } from "./manager/WorkspaceManager";
 import { Point } from "./Point";
 
 export class BoundingBox {
-  static EMPTY = new BoundingBox(0, 0, 0, 0);
+  // Shared sentinel compared by reference across the codebase (=== EMPTY).
+  // Frozen so an accidental in-place mutation (e.g. ensureBounds on an empty
+  // group's box) throws loudly instead of silently corrupting the singleton.
+  static readonly EMPTY: BoundingBox = Object.freeze(new BoundingBox(0, 0, 0, 0));
 
   constructor(
     public x: number,

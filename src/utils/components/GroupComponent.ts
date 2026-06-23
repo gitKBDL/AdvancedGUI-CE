@@ -40,23 +40,29 @@ export class GroupComponent
   }
 
   getBoundingBox(): BoundingBox {
-    let minX = -1,
-      minY = -1,
-      maxX = 0,
-      maxY = 0;
+    // Use +/-Infinity accumulators with an explicit "has bounds" flag instead of
+    // a -1 sentinel: the editor supports negative coordinates (devMode), and the
+    // old sentinel both rejected and mis-detected children at x/y = -1.
+    let minX = Number.POSITIVE_INFINITY,
+      minY = Number.POSITIVE_INFINITY,
+      maxX = Number.NEGATIVE_INFINITY,
+      maxY = Number.NEGATIVE_INFINITY;
+    let hasBounds = false;
+
     this.components.forEach((comp) => {
       const cBox = comp.getBoundingBox();
 
       if (cBox == BoundingBox.EMPTY) return;
+      hasBounds = true;
 
-      if (cBox.x < minX || minX == -1) minX = cBox.x;
-      if (cBox.y < minY || minY == -1) minY = cBox.y;
+      if (cBox.x < minX) minX = cBox.x;
+      if (cBox.y < minY) minY = cBox.y;
 
       if (cBox.x + cBox.width > maxX) maxX = cBox.x + cBox.width;
       if (cBox.y + cBox.height > maxY) maxY = cBox.y + cBox.height;
     });
 
-    if (minX === -1 || minY === -1) return BoundingBox.EMPTY;
+    if (!hasBounds) return BoundingBox.EMPTY;
 
     return new BoundingBox(minX, minY, maxX - minX, maxY - minY);
   }

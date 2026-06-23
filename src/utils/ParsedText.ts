@@ -31,7 +31,10 @@ export class ParsedText {
 
     let lastColor = defaultColor;
     for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
+      // Do NOT trim: leading/trailing spaces are meaningful in a pixel-precise
+      // GUI tool. Trimming made the rendered/measured text diverge from the
+      // stored (and exported) text.
+      let line = lines[i];
       const fragments: TextFragment[] = [];
       let cursorX = 0;
       let pixelMinX = Number.POSITIVE_INFINITY;
