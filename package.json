@@ -14,6 +14,9 @@
     "typecheck": "vue-tsc --noEmit",
     "deploy": "VITE_BASE=/AdvancedGUI-CE/ npm run build && gh-pages -d dist"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "dependencies": {
     "localforage": "^1.10.0",
     "vue": "^3.5.26"
@@ -39,6 +42,6 @@
     "vue-tsc": "^2.2.12"
   },
   "overrides": {
-    "serialize-javascript": "7.0.4"
+    "serialize-javascript": "^7.0.6"
   }
 }
