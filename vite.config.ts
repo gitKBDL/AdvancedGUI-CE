@@ -22,6 +22,41 @@ export default defineConfig(({ mode }) => {
         registerType: "autoUpdate",
         workbox: {
           mode: workboxMode,
+          // The built-in fonts (/fonts/*.ttf) and images (/images/*) are fetched
+          // at runtime, and the UI font/icons come from the Google Fonts CDN.
+          // Cache them so the installed PWA actually works offline (after first
+          // load) — the precache alone only covers the app shell.
+          runtimeCaching: [
+            {
+              urlPattern: /\/(fonts|images)\//,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "agui-builtin-assets",
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+              handler: "StaleWhileRevalidate",
+              options: { cacheName: "google-fonts-stylesheets" },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "google-fonts-webfonts",
+                expiration: {
+                  maxEntries: 30,
+                  maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
         },
         manifest: {
           name: "AdvancedGUI Community Editor",

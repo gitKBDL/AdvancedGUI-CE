@@ -4,6 +4,16 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--
+      Defense-in-depth CSP. Scripts are bundled (no inline/eval), so script-src
+      stays 'self'. style-src needs 'unsafe-inline' for Vue's :style bindings and
+      the Google Fonts stylesheet. img-src is deliberately permissive (http/https)
+      because RemoteImage components load arbitrary user-provided image URLs.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+    />
     <link
       rel="shortcut icon"
       href="%BASE_URL%favicon.svg"
