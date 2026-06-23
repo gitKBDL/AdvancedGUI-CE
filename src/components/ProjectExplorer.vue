@@ -666,7 +666,7 @@ export default defineComponent({
         position: absolute;
         right: 4px;
         font-size: 18px;
-        color: $light4;
+        color: $light3;
         pointer-events: none;
       }
     }
@@ -778,7 +778,7 @@ export default defineComponent({
       font-size: 0.7rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: $light4;
+      color: $light3;
     }
   }
 
@@ -922,7 +922,7 @@ export default defineComponent({
 
     .material-icons {
       font-size: 18px;
-      color: $light4;
+      color: $light3;
     }
 
     input {
@@ -937,7 +937,7 @@ export default defineComponent({
       }
 
       &::placeholder {
-        color: $light4;
+        color: $light3;
       }
     }
   }

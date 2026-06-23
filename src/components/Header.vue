@@ -287,7 +287,7 @@ export default defineComponent({
       position: absolute;
       right: 4px;
       font-size: 18px;
-      color: $light4;
+      color: $light3;
       pointer-events: none;
     }
   }

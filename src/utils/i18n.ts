@@ -3,8 +3,18 @@ import { ref, computed } from "vue";
 export type Language = "en" | "ru";
 
 const saved = localStorage.getItem("language") as Language | null;
-const stored: Language = saved === "en" || saved === "ru" ? saved : "ru";
-export const language = ref<Language>(stored);
+
+function detectInitialLanguage(): Language {
+  if (saved === "en" || saved === "ru") return saved;
+  // No stored preference: follow the browser. Russian speakers keep the native
+  // UI; everyone else defaults to English (the project's lingua franca).
+  if (typeof navigator !== "undefined" && navigator.language) {
+    return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+  }
+  return "ru";
+}
+
+export const language = ref<Language>(detectInitialLanguage());
 
 const translations: Record<Language, Record<string, string>> = {
   en: {

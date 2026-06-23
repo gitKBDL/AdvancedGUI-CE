@@ -17,6 +17,15 @@
   --panel-border: 1px solid rgba(138, 148, 163, 0.2);
 }
 
+// Accessibility: keyboard focus must be visible (WCAG 2.4.7). Many elements set
+// `outline: none` on :focus to suppress the mouse-click ring; this restores a
+// clear ring for keyboard/programmatic focus only (:focus-visible never matches
+// a mouse click), overriding those rules where needed.
+:focus-visible {
+  outline: 2px solid $blue !important;
+  outline-offset: 2px;
+}
+
 body {
   background:
     radial-gradient(
@@ -242,7 +251,7 @@ a {
     box-sizing: border-box;
 
     .label {
-      color: $light4;
+      color: $light3;
       font-weight: 700;
     }
 
@@ -475,7 +484,7 @@ a {
         background-color 120ms ease;
 
       option {
-        color: $light4;
+        color: $light3;
       }
 
       &:focus {
@@ -806,7 +815,7 @@ a {
           }
 
           &.inactive {
-            color: $light4;
+            color: $light3;
             cursor: not-allowed;
 
             &:hover {

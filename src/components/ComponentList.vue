@@ -379,7 +379,7 @@ export default defineComponent({
   }
 
   &:hover .dragIndicator {
-    color: $light4;
+    color: $light3;
   }
 
   .expandBtn {
@@ -406,7 +406,7 @@ export default defineComponent({
 }
 
 .invisible .itemName {
-  color: $light4;
+  color: $light3;
 }
 
 .subFolder {
