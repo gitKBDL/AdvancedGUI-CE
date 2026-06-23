@@ -124,6 +124,14 @@ a {
 }
 
 .btn {
+  // Reset native <button> chrome so semantic `<button class="btn">` renders
+  // identically to the legacy `<div class="btn">` (accessibility: real buttons
+  // are focusable and fire on Enter/Space for free).
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  text-align: inherit;
+
   display: flex;
   padding: 5px 15px;
   align-items: center;

@@ -30,6 +30,7 @@ const translations: Record<Language, Record<string, string>> = {
     "header.shortcuts": "Горячие клавиши",
     "header.sizeFrames": "кадров",
     "header.save": "Сохранить",
+    "header.saved": "Сохранено",
     "header.download": "Скачать",
     "header.about.title": "О редакторе",
     "header.about.body":
@@ -188,6 +189,7 @@ const translations: Record<Language, Record<string, string>> = {
     "projectExplorer.empty.firstBody": "Создайте первый проект, чтобы начать.",
 
     "loading.errorTitle": "Что-то пошло не так",
+    "loading.noticeTitle": "Уведомление",
     "loading.close": "Закрыть",
 
     "template.addVariable": "Добавить переменную",

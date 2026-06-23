@@ -26,18 +26,21 @@
     </div>
 
     <div class="headRight">
-      <div
+      <button
+        type="button"
         class="btn save"
-        :class="!unsavedChange ? 'inactive' : ''"
-        @click="saveCurrentProject"
+        :class="{ inactive: !unsavedChange && !justSaved, saved: justSaved }"
+        @click="save"
       >
-        <span class="material-icons">save</span>
-        <span class="text">{{ t("header.save", "Save") }}</span>
-      </div>
-      <div class="btn export" @click="exportCurrentProject()">
+        <span class="material-icons">{{ justSaved ? "check" : "save" }}</span>
+        <span class="text">{{
+          justSaved ? t("header.saved", "Saved") : t("header.save", "Save")
+        }}</span>
+      </button>
+      <button type="button" class="btn export" @click="exportCurrentProject()">
         <span class="material-icons">get_app</span>
         <span class="text">{{ t("header.download", "Download") }}</span>
-      </div>
+      </button>
       <div class="lang-switch">
         <span class="label">{{ t("header.lang", "Language") }}</span>
         <span class="material-icons">translate</span>
@@ -152,7 +155,8 @@ export default defineComponent({
       languages: availableLanguages.value,
       t,
 
-      saveCurrentProject,
+      justSaved: false,
+      savedTimer: null as number | null,
       exportCurrentProject,
     };
   },
@@ -198,7 +202,23 @@ export default defineComponent({
     },
   },
 
+  unmounted() {
+    if (this.savedTimer !== null) clearTimeout(this.savedTimer);
+  },
+
   methods: {
+    async save() {
+      await saveCurrentProject();
+      // Transient "Saved" confirmation so users can tell the save (and the 20s
+      // autosave path that also lands here) actually persisted.
+      this.justSaved = true;
+      if (this.savedTimer !== null) clearTimeout(this.savedTimer);
+      this.savedTimer = window.setTimeout(() => {
+        this.justSaved = false;
+        this.savedTimer = null;
+      }, 1500);
+    },
+
     openShortcuts() {
       this.showShortcuts = true;
     },

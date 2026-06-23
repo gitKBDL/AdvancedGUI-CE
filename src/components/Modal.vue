@@ -1,14 +1,23 @@
 <template>
   <div class="modal" :style="{ display: modelValue ? 'flex' : 'none' }">
-    <div class="modalContainer">
+    <div
+      class="modalContainer"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="title"
+    >
       <h1 v-if="title">
         <span class="material-icons" v-if="icon">{{ icon }}</span> {{ title }}
       </h1>
       <slot></slot>
       <div class="action-row" v-if="closeBtn">
-        <div class="btn close" @click="$emit('update:modelValue', false)">
+        <button
+          type="button"
+          class="btn close"
+          @click="$emit('update:modelValue', false)"
+        >
           <span class="text">{{ t("modal.ok", "Okay") }}</span>
-        </div>
+        </button>
       </div>
     </div>
   </div>

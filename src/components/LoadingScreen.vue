@@ -7,7 +7,13 @@
     }"
   >
     <span v-if="loading.loading" class="material-icons spin"> autorenew </span>
-    <div v-else-if="loading.error" class="errorScreen">
+    <div
+      v-else-if="loading.error"
+      class="errorScreen"
+      role="alertdialog"
+      aria-modal="true"
+      :aria-label="t('loading.errorTitle', 'Something went wrong')"
+    >
       <h1>
         <span class="material-icons">warning</span>
         {{ t("loading.errorTitle", "Something went wrong") }}
@@ -16,7 +22,8 @@
         {{ loading.error }}
       </p>
       <div class="action-row">
-        <div
+        <button
+          type="button"
           v-if="loading.action"
           class="btn action"
           @click="
@@ -25,22 +32,29 @@
           "
         >
           <span class="text">{{ loading.action.label }}</span>
-        </div>
-        <div class="btn close" @click="loading.error = null">
+        </button>
+        <button type="button" class="btn close" @click="loading.error = null">
           <span class="text">{{ t("loading.close", "Close") }}</span>
-        </div>
+        </button>
       </div>
     </div>
-    <div v-else class="infoScreen">
+    <div
+      v-else
+      class="infoScreen"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="t('loading.noticeTitle', 'Notice')"
+    >
       <p>
         <span class="material-icons">info</span>
         <span class="infoText">{{ loading.info }}</span>
       </p>
       <div class="action-row">
-        <div class="btn close" @click="loading.info = null">
+        <button type="button" class="btn close" @click="loading.info = null">
           <span class="text">{{ t("modal.ok", "Okay") }}</span>
-        </div>
-        <div
+        </button>
+        <button
+          type="button"
           v-if="loading.action"
           class="btn action"
           @click="
@@ -49,7 +63,7 @@
           "
         >
           <span class="text">{{ loading.action.label }}</span>
-        </div>
+        </button>
       </div>
     </div>
   </div>

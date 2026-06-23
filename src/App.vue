@@ -30,7 +30,12 @@
 
     <!-- Mobile Warning Modal -->
     <div v-if="showMobileWarning" class="mobile-warning-overlay">
-      <div class="mobile-warning-modal">
+      <div
+        class="mobile-warning-modal"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="t('app.mobileWarning.title', 'Unsupported device')"
+      >
         <h3>
           {{ t("app.mobileWarning.title", "Unsupported device") }}
         </h3>
