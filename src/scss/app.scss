@@ -15,6 +15,10 @@
   --layout-gap-sm: 12px;
   --panel-radius: 16px;
   --panel-border: 1px solid rgba(138, 148, 163, 0.2);
+  // Monospace for technical readouts (canvas dimensions, ids) — a precision-tool
+  // signature that suits a pixel-grid editor. System stack, no network cost.
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo,
+    Consolas, monospace;
 }
 
 // Accessibility: keyboard focus must be visible (WCAG 2.4.7). Many elements set
@@ -24,6 +28,19 @@
 :focus-visible {
   outline: 2px solid $blue !important;
   outline-offset: 2px;
+}
+
+// Quality floor: respect users who ask for less motion (the fadeUp/spin
+// animations and hover transforms are decorative).
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
@@ -148,12 +165,20 @@ a {
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
-    box-shadow 120ms ease;
+    box-shadow 120ms ease,
+    transform 120ms ease;
 
   &:hover {
     background-color: $dark2;
     border-color: rgba(138, 148, 163, 0.35);
     box-shadow: $shadow;
+    transform: translateY(-1px);
+  }
+
+  // Tactile press feedback.
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
   }
 
   .material-icons {
@@ -309,6 +334,8 @@ a {
         text-align: center;
         color: $light3;
         font-size: 17px;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
 
         &:focus {
           outline: none;
@@ -346,6 +373,13 @@ a {
     .save {
       border: 1px solid $green;
       color: $green;
+
+      // Transient confirmation after a save: fill green to read as "done".
+      &.saved {
+        background-color: $green;
+        border-color: $green;
+        color: $dark1;
+      }
 
       &.inactive {
         border-color: $light3;
