@@ -41,6 +41,7 @@
         <span class="material-icons">get_app</span>
         <span class="text">{{ t("header.download", "Download") }}</span>
       </button>
+      <live-sync />
       <div class="lang-switch">
         <span class="label">{{ t("header.lang", "Language") }}</span>
         <span class="material-icons">translate</span>
@@ -115,6 +116,7 @@
 import { defineComponent } from "vue";
 
 import Modal from "@/components/Modal.vue";
+import LiveSync from "@/components/LiveSync.vue";
 import { settings } from "../utils/manager/SettingsManager";
 import {
   availableLanguages,
@@ -139,7 +141,7 @@ import { info } from "../utils/manager/WorkspaceManager";
 import { normalizeProjectName } from "@/utils/ProjectName";
 
 export default defineComponent({
-  components: { Modal },
+  components: { Modal, LiveSync },
 
   data() {
     return {
