@@ -335,12 +335,12 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
     const result = sanitizeImportedProjectData(
       makeValidRaw({
         [key]: [
-          { name: "good", data: "base64" }, // keep
-          { name: "  ", data: "x" }, // drop: blank name
+          { name: "good", data: "data:application/octet-stream;base64,AAAA" }, // keep
+          { name: "  ", data: "data:x" }, // drop: blank name
           { name: "noData" }, // drop: missing data
           { name: "numData", data: 123 }, // drop: data not string
-          { data: "orphan" }, // drop: no name
-          { name: 5, data: "x" }, // drop: name not string
+          { data: "data:orphan" }, // drop: no name
+          { name: 5, data: "data:x" }, // drop: name not string
           "not-a-record", // drop: not an object
           null, // drop
         ],
@@ -350,12 +350,34 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
       name: string;
       data: string;
     }>;
-    expect(list).toEqual([{ name: "good", data: "base64" }]);
+    expect(list).toEqual([
+      { name: "good", data: "data:application/octet-stream;base64,AAAA" },
+    ]);
   });
+
+  it.each(cases)(
+    "drops %s entries whose data is not a data: URI (no remote fetch on import)",
+    (key) => {
+      const result = sanitizeImportedProjectData(
+        makeValidRaw({
+          [key]: [
+            { name: "remote", data: "https://evil.example/x.png" }, // drop
+            { name: "rel", data: "//evil.example/x.png" }, // drop
+            { name: "js", data: "javascript:alert(1)" }, // drop
+            { name: "ok", data: "data:image/png;base64,AAAA" }, // keep
+          ],
+        }),
+      );
+      const list = (result as unknown as Record<string, unknown>)?.[
+        key
+      ] as Array<{ name: string; data: string }>;
+      expect(list).toEqual([{ name: "ok", data: "data:image/png;base64,AAAA" }]);
+    },
+  );
 
   it.each(cases)("trims the name of surviving %s entries", (key) => {
     const result = sanitizeImportedProjectData(
-      makeValidRaw({ [key]: [{ name: "  Arial  ", data: "d" }] }),
+      makeValidRaw({ [key]: [{ name: "  Arial  ", data: "data:font/ttf;base64,AA" }] }),
     );
     const list = (result as unknown as Record<string, unknown>)?.[key] as Array<{
       name: string;
@@ -366,13 +388,13 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
 
   it.each(cases)("preserves the data string verbatim for %s (no trimming)", (key) => {
     const result = sanitizeImportedProjectData(
-      makeValidRaw({ [key]: [{ name: "n", data: "  spaced-data  " }] }),
+      makeValidRaw({ [key]: [{ name: "n", data: "data:text/plain,  keep  me  " }] }),
     );
     const list = (result as unknown as Record<string, unknown>)?.[key] as Array<{
       name: string;
       data: string;
     }>;
-    expect(list[0].data).toBe("  spaced-data  ");
+    expect(list[0].data).toBe("data:text/plain,  keep  me  ");
   });
 });
 

@@ -102,7 +102,7 @@ export function placeRemoteImage(
     .replace(/%NAME%/g, "Player");
 
   let resImage = imageContainer.querySelector(
-    `[id="${id}"]`,
+    `[id="${CSS.escape(id)}"]`,
   ) as HTMLImageElement;
 
   if (!resImage) {
@@ -141,7 +141,9 @@ export function placeRemoteImage(
 }
 
 export function getRemoteImage(id: string): HTMLImageElement | null {
-  return imageContainer.querySelector(`[id="${id}"]`) as HTMLImageElement;
+  return imageContainer.querySelector(
+    `[id="${CSS.escape(id)}"]`,
+  ) as HTMLImageElement;
 }
 
 export async function registerImage(

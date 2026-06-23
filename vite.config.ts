@@ -10,8 +10,9 @@ export default defineConfig(({ mode }) => {
   
   const base = rawBase.startsWith('/') ? rawBase : `/${rawBase}`;
   const finalBase = base.endsWith('/') ? base : `${base}/`;
-  const isCi = process.env.CI === "true";
-  const workboxMode = isCi ? "production" : "development";
+  // Tie the service-worker build mode to Vite's own mode, not CI. Previously a
+  // local `npm run deploy` (CI unset) shipped a verbose development SW to prod.
+  const workboxMode = mode === "production" ? "production" : "development";
 
   return {
     base: finalBase,

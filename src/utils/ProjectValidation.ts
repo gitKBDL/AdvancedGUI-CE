@@ -27,7 +27,12 @@ function sanitizeNamedDataList(value: unknown) {
         isRecord(item) &&
         typeof item.name === "string" &&
         item.name.trim().length > 0 &&
-        typeof item.data === "string",
+        typeof item.data === "string" &&
+        // Only inline data: URIs. Reject http(s)/protocol-relative/other URLs so
+        // importing or opening an untrusted project never triggers an outbound
+        // request (web-bug / SSRF-flavored tracking) to an attacker-controlled
+        // host. Legitimate exports always emit base64 data: URLs.
+        (item.data as string).startsWith("data:"),
     )
     .map((item) => ({
       name: (item as { name: string }).name.trim(),
