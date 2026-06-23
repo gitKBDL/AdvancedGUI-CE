@@ -93,7 +93,7 @@ export function migrate(data: Project): Project {
 
   if (oldVersion == "1.0.0") {
     traverseComponent(data.componentTree, (comp) => {
-      (comp as any).action.forEach((act: any) => {
+      ((comp as any).action ?? []).forEach((act: any) => {
         traverseAction(act, (action) => {
           if ((action as any).check) {
             reassignObject(action, {
@@ -140,7 +140,7 @@ export function migrate(data: Project): Project {
     data.gifs = [];
 
     traverseComponent(data.componentTree, (comp) => {
-      (comp as any).action.forEach((act: any) => {
+      ((comp as any).action ?? []).forEach((act: any) => {
         traverseAction(act, (action) => {
           if (action.id == CommandAction.id) {
             (action as any).asOperator = false;
@@ -189,7 +189,7 @@ export function migrate(data: Project): Project {
         }
       }
 
-      (comp as any).action.forEach((act: any) => {
+      ((comp as any).action ?? []).forEach((act: any) => {
         traverseAction(act, (action) => {
           if ((action as any).check?.type == PlaceholderCheck.id) {
             (action as any).check.compType = ComparisonType.STRING;
@@ -216,7 +216,7 @@ export function migrate(data: Project): Project {
         normalizeCheck((comp as any).check);
       }
 
-      (comp as any).action.forEach((act: any) => {
+      ((comp as any).action ?? []).forEach((act: any) => {
         traverseAction(act, normalizeAction);
       });
     });
@@ -230,7 +230,7 @@ export function migrate(data: Project): Project {
         normalizeCheck((comp as any).check);
       }
 
-      (comp as any).action.forEach((act: any) => {
+      ((comp as any).action ?? []).forEach((act: any) => {
         traverseAction(act, normalizeAction);
       });
     });

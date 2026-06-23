@@ -22,6 +22,10 @@ const HISTORY_UPDATE_DEBOUNCE = 250;
 let updateTimer: number | null = null;
 let pauseDepth = 0;
 let autoTrackingStops: WatchStopHandle[] = [];
+// Snapshot string of the last state that was persisted to disk. Used to keep
+// `unsavedChange` honest across undo/redo (which restore via loadProjectFromJson
+// under a pause guard, so they never run updateHistory).
+let savedSnapshot: string | null = null;
 
 function isHistoryTrackingPaused() {
   return history.pauseHistoryTracking || pauseDepth > 0;
@@ -46,7 +50,7 @@ function pushSnapshot(stateObj: Project, snapshot: string) {
   history.stack.splice(0, 0, stateObj);
   history.snapshots.splice(0, 0, snapshot);
   history.historyIndex = 0;
-  if (history.stack.length >= MAX_HISTORY) {
+  if (history.stack.length > MAX_HISTORY) {
     history.stack.pop();
     history.snapshots.pop();
   }
@@ -72,6 +76,7 @@ export async function redo() {
   pauseHistoryTracking();
   try {
     await loadProjectFromJson(exportData, true);
+    refreshUnsavedFlag();
   } finally {
     resumeHistoryTracking();
     loading(false);
@@ -87,6 +92,7 @@ export async function undo() {
   pauseHistoryTracking();
   try {
     await loadProjectFromJson(exportData, true);
+    refreshUnsavedFlag();
   } finally {
     resumeHistoryTracking();
     loading(false);
@@ -106,6 +112,21 @@ export function updateHistory() {
   if (history.stack.length) unsavedChange.value = true;
 
   pushSnapshot(stateObj, snapshot);
+}
+
+// Recompute the dirty flag by comparing the current history position against the
+// last-saved snapshot. undo()/redo() call this because they bypass updateHistory.
+function refreshUnsavedFlag() {
+  unsavedChange.value =
+    savedSnapshot === null ||
+    history.snapshots[history.historyIndex] !== savedSnapshot;
+}
+
+// Called by the persistence layer after a successful save: the current history
+// position now matches what is on disk.
+export function markHistorySaved() {
+  savedSnapshot = history.snapshots[history.historyIndex] ?? null;
+  unsavedChange.value = false;
 }
 
 export function pauseHistoryTracking() {
@@ -170,6 +191,7 @@ export function resetHistoryWithCurrentState() {
   history.stack = [];
   history.snapshots = [];
   pushSnapshot(stateObj, snapshot);
+  savedSnapshot = snapshot;
   unsavedChange.value = false;
 }
 

@@ -54,29 +54,41 @@ export async function unregisterImage(imageName: string) {
   if (elem?.parentElement) elem.remove();
 }
 
-export async function registerImageBase64(
+export function registerImageBase64(
   dataUrl: string,
   imageName: string,
   isGif: boolean,
-) {
+): Promise<void> {
   if (regImages.indexOf(imageName) !== -1) unregisterImage(imageName);
 
-  const imageElement = document.createElement("img") as HTMLImageElement;
-  imageElement.crossOrigin = "anonymous";
-  imageElement.onload = () => {
-    const image: Image = {
-      name: imageName,
-      data: imageElement,
-      ratio: imageElement.naturalWidth / imageElement.naturalHeight,
-      isGif,
+  // Resolve only once the image has actually decoded, so callers (e.g. the
+  // project-load Promise.all) really wait for it instead of racing an empty
+  // registry. onerror also resolves — one bad image must not abort a whole
+  // batch — and both paths request a redraw so the canvas reflects the result.
+  return new Promise<void>((resolve) => {
+    const imageElement = document.createElement("img") as HTMLImageElement;
+    imageElement.crossOrigin = "anonymous";
+
+    imageElement.onload = () => {
+      images[imageName] = {
+        name: imageName,
+        data: imageElement,
+        ratio: imageElement.naturalWidth / imageElement.naturalHeight,
+        isGif,
+      };
+      regImages.push(imageName);
+      requestRedraw();
+      resolve();
     };
 
-    images[imageName] = image; // TODO ref?
-    regImages.push(imageName);
-  };
+    imageElement.onerror = () => {
+      console.warn(`Failed to decode image "${imageName}"`);
+      resolve();
+    };
 
-  imageElement.src = dataUrl;
-  imageContainer.appendChild(imageElement);
+    imageElement.src = dataUrl;
+    imageContainer.appendChild(imageElement);
+  });
 }
 
 export function placeRemoteImage(

@@ -8,10 +8,10 @@ import {
 } from "../handler/ProjectSerializationHandler";
 import { Project } from "../Project";
 import {
+  markHistorySaved,
   pauseHistoryTracking,
   resetHistoryWithCurrentState,
   resumeHistoryTracking,
-  unsavedChange,
 } from "./HistoryManager";
 import { settings } from "./SettingsManager";
 import { migrate, VERSION } from "./UpdateManager";
@@ -75,9 +75,17 @@ async function loadStoredProjectByName(name: string): Promise<Project | null> {
   return null;
 }
 
-async function removeInvalidStoredProject(name: string) {
+async function quarantineInvalidStoredProject(name: string) {
+  // Never silently destroy possibly-recoverable user data. A sanitize/parse
+  // failure on load moves the raw record aside under `corrupt/<name>` (instead
+  // of deleting it) so it can be inspected or recovered later. The thumbnail is
+  // kept to aid identification.
+  const raw = await localforage.getItem(`project/${name}`);
+  if (raw !== null) {
+    await localforage.setItem(`corrupt/${name}`, raw);
+  }
   await localforage.removeItem(`project/${name}`);
-  await localforage.removeItem(`thumbnail/${name}`);
+  console.warn(`Quarantined unreadable project "${name}" to corrupt/${name}`);
 }
 
 export async function loadProjects() {
@@ -98,7 +106,7 @@ export async function loadProjects() {
     const project = await loadStoredProjectByName(name);
 
     if (!project || typeof project.name !== "string") {
-      await removeInvalidStoredProject(name);
+      await quarantineInvalidStoredProject(name);
       continue;
     }
 
@@ -167,7 +175,7 @@ export async function saveCurrentProject() {
 
   if (nameChange || index === -1) await updateProjectNames();
 
-  unsavedChange.value = false;
+  markHistorySaved();
 }
 
 export async function importProject(data: unknown) {

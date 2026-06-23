@@ -43,6 +43,15 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// Untrusted JSON (imported files, clipboard, migrated savepoints) drives these
+// registry lookups. componentInfo is a plain object literal, so an unknown or
+// prototype-chain key (e.g. "constructor", "toString") would otherwise resolve
+// to an inherited member and crash with "fromJson is not a function". Guard with
+// an own-property check so unknown types are dropped cleanly instead.
+function hasComponentMeta(type: string): boolean {
+  return Object.prototype.hasOwnProperty.call(componentInfo, type);
+}
+
 function syncInvisibleSet() {
   invisibleIDSet.clear();
   invisibleIDs.value.forEach((id) => invisibleIDSet.add(id));
@@ -118,7 +127,7 @@ function _reassignIDs(
   idGernerator = generateUniqueID as (oldId: string) => string,
   idMap: { [key: string]: string },
 ) {
-  if (jsonObj.type) {
+  if (jsonObj.type && hasComponentMeta(jsonObj.type)) {
     idMap[jsonObj.id] = idGernerator(jsonObj.id);
 
     const childs = componentInfo[jsonObj.type].childComponentProps;
@@ -252,7 +261,7 @@ export function componentFromJson(
 ): Component | null {
   if (reassignIDsFirst) jsonObj = reassignIDs(jsonObj);
 
-  if (jsonObj.type) {
+  if (jsonObj.type && hasComponentMeta(jsonObj.type)) {
     const actions = actionsFromJson(jsonObj.action);
     const component = componentInfo[jsonObj.type].fromJson(jsonObj, actions);
     component.locked = !!jsonObj.locked;

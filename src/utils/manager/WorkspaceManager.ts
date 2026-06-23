@@ -1,11 +1,7 @@
 import { reactive, ref } from "vue";
 import { Component } from "../components/Component";
 import { Selection } from "../Selection";
-import {
-  componentFromJson,
-  JsonObject,
-  registerComponent,
-} from "./ComponentManager";
+import { componentFromJson, JsonObject } from "./ComponentManager";
 
 export const componentTree = ref([] as Component[]);
 export const selection = ref(null as Selection);
@@ -69,7 +65,8 @@ export function pasteComponent(target?: Component[]) {
   }
 
   if (copiedComponent.value) {
-    const nComp = componentFromJson(JSON.parse(copiedComponent.value), true)!;
+    const nComp = componentFromJson(JSON.parse(copiedComponent.value), true);
+    if (!nComp) return;
 
     target.splice(0, 0, nComp);
     updateSelection({ value: nComp });
@@ -84,10 +81,10 @@ export function addJsonComponentsToRoot(
     const component = componentFromJson(componentData, reassignIDs);
 
     if (component) {
+      // componentFromJson already registers the component; do not register a
+      // second time (that re-runs the parent-cache / invisible-id side effects).
       if (components.length == 1) componentTree.value.splice(0, 0, component);
       else componentTree.value.push(component);
-
-      registerComponent(component);
     } else {
       throw Error(
         `Unable to import component ${JSON.stringify(componentData).substr(

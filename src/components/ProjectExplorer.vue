@@ -482,7 +482,18 @@ export default defineComponent({
         {
           icon: "delete",
           name: t("projectExplorer.delete", "Delete"),
-          action: () => deleteProject(project.name),
+          action: () =>
+            info(
+              t(
+                "projectExplorer.confirmDelete",
+                'Delete project "{name}"? This cannot be undone.',
+              ).replace("{name}", project.name),
+              false,
+              {
+                label: t("projectExplorer.delete", "Delete"),
+                callback: () => deleteProject(project.name),
+              },
+            ),
         },
       ];
 

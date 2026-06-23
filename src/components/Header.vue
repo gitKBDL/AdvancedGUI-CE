@@ -15,9 +15,9 @@
     <div class="center">
       <input class="inputProjectName" type="text" v-model="projectNameModel" />
       <div class="size">
-        <input type="number" v-model="settings.width" />
+        <input type="number" v-model.number="settings.width" />
         <span class="label">x</span>
-        <input type="number" v-model="settings.height" />
+        <input type="number" v-model.number="settings.height" />
         <span class="label">{{ t("header.sizeFrames", "frames") }}</span>
         <span class="sizeResolution"
           >({{ pixelWidth }}:{{ pixelHeight }} px)</span

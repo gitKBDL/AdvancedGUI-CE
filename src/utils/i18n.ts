@@ -150,6 +150,8 @@ const translations: Record<Language, Record<string, string>> = {
     "projectExplorer.open": "ОТКРЫТЬ",
     "projectExplorer.download": "Скачать",
     "projectExplorer.delete": "Удалить",
+    "projectExplorer.confirmDelete":
+      'Удалить проект "{name}"? Это действие нельзя отменить.',
     "projectExplorer.openToUpdate": "Открыть и обновить",
     "projectExplorer.subtitle":
       "Удобный редактор GUI для Minecraft от сообщества",
