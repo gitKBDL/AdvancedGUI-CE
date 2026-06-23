@@ -223,12 +223,25 @@ export function reassignIDs(
   const idMap: { [key: string]: string } = {};
   _reassignIDs(jsonObj, idGernerator, idMap);
 
-  let json = JSON.stringify(jsonObj);
-  Object.keys(idMap)
+  const oldIds = Object.keys(idMap);
+  if (oldIds.length === 0) return JSON.parse(JSON.stringify(jsonObj));
+
+  // Remap every id occurrence in a SINGLE left-to-right pass. The previous
+  // approach ran one global replace per id (longest-first), which could
+  // re-enter a freshly written new id when an old id happened to be a
+  // substring of it (e.g. old "ab" matching inside the new id "abZZZZ22"),
+  // corrupting the result. A single alternation regex consumes each match
+  // once and never rescans substituted text. Longest-first ordering makes the
+  // engine prefer the longest id at any position, since JS alternation picks
+  // the first matching branch rather than the longest.
+  const pattern = oldIds
     .sort((left, right) => right.length - left.length)
-    .forEach((orgId) => {
-      json = json.replace(new RegExp(escapeRegExp(orgId), "g"), idMap[orgId]);
-    });
+    .map(escapeRegExp)
+    .join("|");
+  const json = JSON.stringify(jsonObj).replace(
+    new RegExp(pattern, "g"),
+    (match) => idMap[match] ?? match,
+  );
 
   return JSON.parse(json);
 }

@@ -223,27 +223,26 @@ describe("reassignIDs — referential integrity of a remapped subtree", () => {
     expect(reassigned.components[0].id).toBe("QQQQ1111");
   });
 
-  // BUG: reassignIDs() remaps ids via a sequence of global string replaces. The
-  // longest-first ordering only protects against an OLD id being a substring of
-  // another OLD id. It does NOT protect against an old id being a substring of a
-  // NEWLY written id: here old id "ab" is a substring of the new id "abZZZZ22"
-  // that "abcd" was just remapped to, so the subsequent "ab" -> "abZZZZ11"
-  // replace also rewrites the "ab" inside "abZZZZ22", producing the corrupted
-  // "abZZZZ11ZZZZ22". With the real random 8-char generator a new id containing
-  // an old id is astronomically unlikely, so this is latent — but it is a real
-  // correctness gap: id remapping should not be a blind textual substitution.
-  it.skip("BUG: reassignIDs corrupts when an old id is a substring of a new id", () => {
+  // Regression guard (previously a latent bug): reassignIDs() used to remap ids
+  // via a sequence of global string replaces. The longest-first ordering only
+  // protected against an OLD id being a substring of another OLD id, NOT against
+  // an old id being a substring of a NEWLY written id: old id "ab" is a substring
+  // of the new id "abZZZZ22" that "abcd" was remapped to, so a subsequent
+  // "ab" -> "abZZZZ11" replace also rewrote the "ab" inside "abZZZZ22", producing
+  // the corrupted "abZZZZ11ZZZZ22". The single-pass alternation remap consumes
+  // each id once and never rescans substituted text, so this now maps cleanly.
+  it("reassignIDs does not corrupt when an old id is a substring of a new id", () => {
     const child = makeRect("ab");
     const group = new GroupComponent("abcd", "g", [], [child], true);
     const draft = JSON.parse(group.toJson());
 
     const mapping: Record<string, string> = {
       ab: "abZZZZ11",
-      abcd: "abZZZZ22", // contains "ab" -> later "ab" replace re-enters it
+      abcd: "abZZZZ22", // contains "ab" — a later "ab" replace must NOT re-enter it
     };
     const reassigned = reassignIDs(draft, (oldId) => mapping[oldId]);
 
-    // Correct expectation: each id maps cleanly to its target.
+    // Each id maps cleanly to its target.
     expect(reassigned.id).toBe("abZZZZ22");
     expect(reassigned.components[0].id).toBe("abZZZZ11");
   });
