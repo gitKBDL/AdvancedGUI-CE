@@ -4,22 +4,22 @@
       class="actualTree"
       root
       :components="componentTree"
-      :modelValue="selectedComponent"
-      @update:modelValue="(val) => updateSelection(val)"
+      :model-value="selectedComponent"
+      @update:model-value="(val) => updateSelection(val)"
       @copy="copiedComponent = $event"
       @deleted="checkDelete"
       @add-child="addChildToTreeElem"
     ></component-list>
 
     <div
-      class="btn addComponentBtn"
       ref="addComponentBtn"
+      class="btn addComponentBtn"
       @click.stop="toggleCompAddMenu"
     >
       <span class="material-icons">add</span>
       <span class="text">{{ t("componentTree.add", "Add component") }}</span>
 
-      <div class="absoluteMenu compAddMenu" ref="compAddMenu" @click.stop>
+      <div ref="compAddMenu" class="absoluteMenu compAddMenu" @click.stop>
         <template v-if="copiedComponent">
           <div class="entry" @click.stop="pasteComponentAndClose()">
             <span class="material-icons">content_paste</span>
@@ -28,7 +28,7 @@
           <div class="divider"></div>
         </template>
         <div v-for="(key, index) in componentNames" :key="index">
-          <div class="divider" v-if="index != 0"></div>
+          <div v-if="index != 0" class="divider"></div>
           <div class="entry" @click.stop="addNewComponent(key)">
             <span class="material-icons">{{ componentInfo[key].icon }}</span>
             {{ t(`component.${key}`, key) }}
@@ -74,18 +74,18 @@ export default defineComponent({
     };
   },
 
+  computed: {
+    selectedComponent(): Component | null {
+      return this.selection?.component || null;
+    },
+  },
+
   mounted() {
     document.addEventListener("click", this.checkClose, { capture: true });
   },
 
   unmounted() {
     document.removeEventListener("click", this.checkClose, { capture: true });
-  },
-
-  computed: {
-    selectedComponent(): Component | null {
-      return this.selection?.component || null;
-    },
   },
 
   methods: {

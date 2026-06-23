@@ -14,7 +14,7 @@
           <option value="string">{{ t("common.text", "Text") }}</option>
         </select>
         <span class="label hashtag">#</span>
-        <input class="varName" type="text" v-model="data.name" />
+        <input v-model="data.name" class="varName" type="text" />
         <span
           class="material-icons closeIcon"
           @click="component.entryType.splice(i, 1)"
@@ -48,10 +48,10 @@
             <span class="varName">#{{ variable.name }} =</span>
             <input
               v-if="variable.type == 'number'"
-              type="number"
               v-model.number="entry[variable.name]"
+              type="number"
             />
-            <input v-else type="text" v-model="entry[variable.name]" />
+            <input v-else v-model="entry[variable.name]" type="text" />
           </div>
         </div>
         <span
@@ -71,18 +71,18 @@
     </div>
     <div class="settings-row">
       <div class="input-box">
-        <input type="number" v-model.number="component.xOffset" />
+        <input v-model.number="component.xOffset" type="number" />
         <span>X</span>
       </div>
       <div class="input-box">
-        <input type="number" v-model.number="component.yOffset" />
+        <input v-model.number="component.yOffset" type="number" />
         <span>Y</span>
       </div>
     </div>
     <br />
     <div class="settings-row">
       <div class="input-box">
-        <input type="number" v-model.number="component.itemsAtOnce" />
+        <input v-model.number="component.itemsAtOnce" type="number" />
         <span>{{ t("list.entriesPerPage", "Entries per page") }}</span>
       </div>
     </div>
@@ -95,8 +95,8 @@
       }}
     </div>
     <input
-      type="range"
       v-model.number="component.drawOffset"
+      type="range"
       :max="component.pageCount - 1"
     />
     <br />
@@ -117,15 +117,15 @@ import { List } from "@/utils/components/List";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     component: {
       type: Object as () => List,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

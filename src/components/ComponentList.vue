@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="moreMenu absoluteMenu" ref="moreMenu">
+    <div ref="moreMenu" class="moreMenu absoluteMenu">
       <template v-if="optElem">
         <template
           v-if="
@@ -33,8 +33,8 @@
           <div class="divider"></div>
         </template>
         <div
-          class="entry"
           v-if="optElem.hideable"
+          class="entry"
           @click.stop="visibilityOpt()"
         >
           <span class="material-icons">{{
@@ -53,7 +53,7 @@
     <div>
       <drag-zone
         v-if="activeIndex != 0 && hasCapacity"
-        :dragIndication="!!treeState.dragElement"
+        :drag-indication="!!treeState.dragElement"
         @droped="dragDrop(0)"
       ></drag-zone>
       <div v-for="(elem, index) in components" :key="index">
@@ -66,14 +66,14 @@
               : '') +
             (itemClasses[index] || '')
           "
+          draggable="true"
+          ondragstart="event.dataTransfer.setData('text/plain', null)"
           @mousedown.stop="
             $emit('update:modelValue', {
               value: modelValue == elem ? null : elem,
               event: $event,
             })
           "
-          draggable="true"
-          ondragstart="event.dataTransfer.setData('text/plain', null)"
           @dragstart.self="(ev) => dragStart(ev.target as HTMLElement, elem, index)"
           @dragend.self="(ev) => dragEnd(ev.target as HTMLElement)"
           @dragover.prevent
@@ -100,24 +100,24 @@
               >more_vert</span
             >
           </div>
-          <div class="subFolder" v-if="elem.isGroup() && elem.expanded">
+          <div v-if="elem.isGroup() && elem.expanded" class="subFolder">
             <component-list
               :components="elem.getItems()"
-              :modelValue="modelValue"
-              :treeState="treeState"
-              :itemLimit="elem.itemLimit"
-              :itemClasses="elem.itemClasses"
+              :model-value="modelValue"
+              :tree-state="treeState"
+              :item-limit="elem.itemLimit"
+              :item-classes="elem.itemClasses"
               @deleted="$emit('deleted', $event)"
-              @update:modelValue="(val) => $emit('update:modelValue', val)"
+              @update:model-value="(val) => $emit('update:modelValue', val)"
               @copy="(val) => $emit('copy', val)"
               @add-child="(val) => $emit('add-child', val)"
             ></component-list>
           </div>
         </div>
         <drag-zone
-          :dragIndication="!!treeState.dragElement"
-          @droped="dragDrop(index + 1)"
           v-if="activeIndex != index && activeIndex != index + 1 && hasCapacity"
+          :drag-indication="!!treeState.dragElement"
+          @droped="dragDrop(index + 1)"
         ></drag-zone>
       </div>
     </div>
@@ -140,18 +140,6 @@ export default defineComponent({
   name: "ComponentList",
 
   components: { DragZone },
-
-  emits: ["update:modelValue", "deleted", "copy", "add-child"],
-
-  data() {
-    return {
-      activeIndex: -2,
-      optElem: null as null | ListItem,
-      invisibleIDs: vueRef(invisibleIDs),
-      toggleVis,
-      t,
-    };
-  },
 
   props: {
     components: {
@@ -185,12 +173,16 @@ export default defineComponent({
     },
   },
 
-  mounted() {
-    document.addEventListener("click", this.checkClose, { capture: true });
-  },
+  emits: ["update:modelValue", "deleted", "copy", "add-child"],
 
-  unmounted() {
-    document.removeEventListener("click", this.checkClose, { capture: true });
+  data() {
+    return {
+      activeIndex: -2,
+      optElem: null as null | ListItem,
+      invisibleIDs: vueRef(invisibleIDs),
+      toggleVis,
+      t,
+    };
   },
 
   computed: {
@@ -202,6 +194,14 @@ export default defineComponent({
 
       return current < this.itemLimit;
     },
+  },
+
+  mounted() {
+    document.addEventListener("click", this.checkClose, { capture: true });
+  },
+
+  unmounted() {
+    document.removeEventListener("click", this.checkClose, { capture: true });
   },
 
   methods: {

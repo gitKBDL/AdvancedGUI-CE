@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { Component } from "../components/Component";
 import { Action } from "../actions/Action";
 import { Text } from "../components/Text";

@@ -26,10 +26,10 @@ function installStorageShim(name: "localStorage" | "sessionStorage") {
     removeItem: (key: string) => void store.delete(key),
     setItem: (key: string, value: string) => void store.set(key, String(value)),
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   Object.defineProperty(globalThis, name, { value: shim, configurable: true, writable: true });
   if (typeof window !== "undefined") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     Object.defineProperty(window, name, { value: shim, configurable: true, writable: true });
   }
 }
@@ -89,9 +89,9 @@ export function createFakeContext(): CanvasRenderingContext2D {
 
 // Route every <canvas>.getContext("2d") to our deterministic fake.
 const sharedContext = createFakeContext();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any).HTMLCanvasElement &&
-  (HTMLCanvasElement.prototype.getContext = vi.fn(
+ 
+if ((globalThis as any).HTMLCanvasElement) {
+  HTMLCanvasElement.prototype.getContext = vi.fn(
     (type: string) => (type === "2d" ? sharedContext : null),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as any);
+  ) as any;
+}

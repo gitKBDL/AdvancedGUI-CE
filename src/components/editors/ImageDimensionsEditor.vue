@@ -10,11 +10,11 @@
     </div>
     <div class="settings-row">
       <span class="label">{{ t("image.keepRatio", "Keep ratio") }}</span>
-      <input type="checkbox" v-model="component.keepImageRatio" />
+      <input v-model="component.keepImageRatio" type="checkbox" />
     </div>
     <div class="settings-row">
       <span class="label">{{ t("image.dithering", "Dithering") }}</span>
-      <input type="checkbox" v-model="component.dithering" />
+      <input v-model="component.dithering" type="checkbox" />
     </div>
   </div>
 </template>
@@ -37,11 +37,6 @@ export default defineComponent({
   components: {
     BoundingBoxInputs,
   },
-  data() {
-    return {
-      t,
-    };
-  },
 
   props: {
     component: {
@@ -56,6 +51,11 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+  },
+  data() {
+    return {
+      t,
+    };
   },
 
   methods: {

@@ -2,11 +2,11 @@
   <div>
     <div class="settings-row">
       <span class="label">{{ t("command.command", "Command") }}</span>
-      <input type="text" v-model="action.command" />
+      <input v-model="action.command" type="text" />
     </div>
     <div class="settings-row">
       <span class="label">{{ t("command.console", "Run as console") }}</span>
-      <input type="checkbox" v-model="action.asConsole" />
+      <input v-model="action.asConsole" type="checkbox" />
     </div>
   </div>
 </template>
@@ -17,15 +17,15 @@ import { CommandAction } from "@/utils/actions/CommandAction";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     action: {
       type: Object as () => CommandAction,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

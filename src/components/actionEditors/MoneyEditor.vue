@@ -3,9 +3,9 @@
     <div class="settings-row">
       <span class="label">{{ t("money.amount", "Amount") }}</span>
       <input
+        v-model.number="action.amount"
         type="number"
         @keypress="inputTransformer($event, action.amount)"
-        v-model.number="action.amount"
       />
     </div>
     <p>
@@ -41,18 +41,18 @@ import { Template } from "../../utils/components/Template";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      inputTransformer: Template.inputTransformer,
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => MoneyAction,
       required: true,
     },
+  },
+  data() {
+    return {
+      inputTransformer: Template.inputTransformer,
+      t,
+    };
   },
 });
 </script>

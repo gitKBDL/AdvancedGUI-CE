@@ -2,11 +2,11 @@
   <div>
     <div class="settings-row">
       <span class="label">{{ t("metadata.key", "Metadata key") }}</span>
-      <input type="text" v-model="action.key" />
+      <input v-model="action.key" type="text" />
     </div>
-    <div class="settings-row" v-if="action.value !== undefined">
+    <div v-if="action.value !== undefined" class="settings-row">
       <span class="label">{{ t("metadata.newValue", "New value") }}</span>
-      <input type="text" v-model="action.value" />
+      <input v-model="action.value" type="text" />
     </div>
     <div class="settings-row">
       <span class="label">{{ t("metadata.deleteValue", "Delete value") }}</span>
@@ -34,15 +34,15 @@ import { MetadataAction } from "@/utils/actions/MetadataAction";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     action: {
       type: Object as () => MetadataAction,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

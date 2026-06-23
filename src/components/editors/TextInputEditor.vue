@@ -1,29 +1,29 @@
 <template>
   <div id="textInputEditor">
     <color-input
-      :label="t('textInput.bg', 'Background color')"
       v-model:color="component.backgroundColor"
+      :label="t('textInput.bg', 'Background color')"
     ></color-input>
     <color-input
-      :label="t('textInput.bgActive', 'Active background color')"
       v-model:color="component.backgroundColorActive"
+      :label="t('textInput.bgActive', 'Active background color')"
     ></color-input>
     <div class="settings-row">
       <span class="label">{{ t("textInput.placeholder", "Placeholder") }}</span>
-      <input type="text" v-model="component.placeHolder" />
+      <input v-model="component.placeHolder" type="text" />
     </div>
     <div class="settings-row">
       <span class="label">{{ t("textInput.default", "Default input") }}</span>
-      <input type="text" v-model="component.defaultInput" />
+      <input v-model="component.defaultInput" type="text" />
     </div>
     <div class="settings-row">
       <span class="label">{{
         t("textInput.maxLength", "Max input length")
       }}</span>
       <input
+        v-model.number="component.maxLength"
         type="number"
         style="max-width: 40px"
-        v-model.number="component.maxLength"
       />
     </div>
     <br />
@@ -32,8 +32,8 @@
     }}</span>
     <color-input v-model:color="component.fontColor"></color-input>
     <color-input
-      :label="t('textInput.placeholderColor', 'Placeholder Color')"
       v-model:color="component.fontColorPlaceholder"
+      :label="t('textInput.placeholderColor', 'Placeholder Color')"
     ></color-input>
     <font-editor
       v-model:font="component.font"
@@ -42,23 +42,23 @@
     <div class="label heading">{{ t("textInput.position", "Position") }}</div>
     <div class="settings-row">
       <div class="input-box">
-        <input type="number" v-model.number="component.x" /> <span>X</span>
+        <input v-model.number="component.x" type="number" /> <span>X</span>
       </div>
       <div class="input-box">
-        <input type="number" v-model.number="component.width" /> <span>W</span>
-      </div>
-    </div>
-    <div class="settings-row">
-      <div class="input-box">
-        <input type="number" v-model.number="component.y" /> <span>Y</span>
-      </div>
-      <div class="input-box">
-        <input type="number" v-model.number="component.height" /> <span>H</span>
+        <input v-model.number="component.width" type="number" /> <span>W</span>
       </div>
     </div>
     <div class="settings-row">
       <div class="input-box">
-        <input type="number" v-model.number="component.padding" />
+        <input v-model.number="component.y" type="number" /> <span>Y</span>
+      </div>
+      <div class="input-box">
+        <input v-model.number="component.height" type="number" /> <span>H</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="input-box">
+        <input v-model.number="component.padding" type="number" />
         <span>{{ t("textInput.padding", "Padding") }}</span>
       </div>
     </div>
@@ -81,9 +81,6 @@ import ColorInput from "../ColorInput.vue";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   components: { FontEditor, ColorInput },
 
@@ -100,6 +97,9 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 
   watch: {

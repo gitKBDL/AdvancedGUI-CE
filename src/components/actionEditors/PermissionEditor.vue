@@ -2,7 +2,7 @@
   <div>
     <div class="settings-row">
       <span class="label">{{ t("permission.permission", "Permission") }}</span>
-      <input type="text" v-model="action.permission" />
+      <input v-model="action.permission" type="text" />
     </div>
     <div class="settings-row switch-row">
       <span
@@ -27,15 +27,15 @@ import { PermissionAction } from "@/utils/actions/PermissionAction";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     action: {
       type: Object as () => PermissionAction,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

@@ -23,8 +23,8 @@
       </p>
       <div class="action-row">
         <button
-          type="button"
           v-if="loading.action"
+          type="button"
           class="btn action"
           @click="
             loading.error = null;
@@ -54,8 +54,8 @@
           <span class="text">{{ t("modal.ok", "Okay") }}</span>
         </button>
         <button
-          type="button"
           v-if="loading.action"
+          type="button"
           class="btn action"
           @click="
             loading.info = null;

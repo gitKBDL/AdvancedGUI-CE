@@ -22,9 +22,9 @@
     <a id="downloadAnchor" style="display: none"></a>
     <div ref="imageContainer" style="display: none">
       <img
+        id="broken_TAKEN_ID"
         :src="baseUrl + 'images/error.svg'"
         crossorigin="anonymous"
-        id="broken_TAKEN_ID"
       />
     </div>
 

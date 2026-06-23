@@ -1,7 +1,7 @@
 <template>
   <div id="checkCompSettings">
     <div class="settings-row">
-      <input type="checkbox" v-model="component.drawNegative" />
+      <input v-model="component.drawNegative" type="checkbox" />
       <span class="label">
         {{ t("check.showNegative", "Show negative component") }}
       </span>
@@ -28,7 +28,7 @@
     </div>
     <div class="settings-row">
       <component
-        v-bind:is="checks[component.check.name].component"
+        :is="checks[component.check.name].component"
         :action="component.check"
       ></component>
     </div>
@@ -53,6 +53,13 @@ import { error } from "../../utils/manager/WorkspaceManager";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
+
+  props: {
+    component: {
+      type: Object as () => CheckComponent,
+      required: true,
+    },
+  },
   data() {
     return {
       checks,
@@ -60,13 +67,6 @@ export default defineComponent({
       error,
       t,
     };
-  },
-
-  props: {
-    component: {
-      type: Object as () => CheckComponent,
-      required: true,
-    },
   },
 });
 </script>

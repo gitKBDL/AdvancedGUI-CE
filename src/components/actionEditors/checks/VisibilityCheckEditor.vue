@@ -5,11 +5,11 @@
         t("visibility.componentId", "Component ID")
       }}</span>
       <input
-        type="text"
         ref="test"
+        v-model="action.targetId"
+        type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (action.targetId = val)"
-        v-model="action.targetId"
       />
     </div>
     <p class="label" :class="components[action.targetId] ? '' : 'red-text'">
@@ -40,19 +40,19 @@ import { vueRef } from "../../../utils/VueRef";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      components,
-      idWatcher: vueRef(idWatcher),
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => VisibilityCheck,
       required: true,
     },
+  },
+  data() {
+    return {
+      components,
+      idWatcher: vueRef(idWatcher),
+      t,
+    };
   },
 });
 </script>

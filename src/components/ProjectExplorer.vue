@@ -159,9 +159,9 @@
         <div
           v-for="project in filteredProjects"
           :key="project.name"
+          :ref="`proj#${project.name}`"
           class="card projectCard"
           @click="openProject(project)"
-          :ref="`proj#${project.name}`"
         >
           <div class="cardHeader">
             <div v-if="project.version != VERSION" class="badge">
@@ -186,8 +186,8 @@
           </div>
 
           <absolute-menu
-            :entries="getActions(project)"
             :ref="`projMenu#${project.name}`"
+            :entries="getActions(project)"
           ></absolute-menu>
         </div>
       </div>
@@ -220,18 +220,18 @@
     <div class="absInfoBar"></div>
 
     <input
-      type="file"
       ref="fileDownload"
+      type="file"
       accept=".json"
       style="display: none"
       @change="checkForUpload()"
     />
     <teleport to="body">
       <modal
+        v-model="showAbout"
         :title="t('header.about.title', 'About the editor')"
         icon="help_outline"
-        v-model="showAbout"
-        closeBtn
+        close-btn
       >
         <p>
           {{
@@ -243,10 +243,10 @@
         </p>
       </modal>
       <modal
+        v-model="showDevMode"
         :title="t('header.dev.title', 'Dev-Mode')"
         icon="code"
-        v-model="showDevMode"
-        closeBtn
+        close-btn
       >
         <p>
           {{
@@ -321,6 +321,8 @@ function getProjectSizeMB(project: Project) {
 }
 
 export default defineComponent({
+
+  components: { AbsoluteMenu, Modal },
   data() {
     return {
       projects: vueRef(projects),
@@ -337,19 +339,6 @@ export default defineComponent({
       languages: availableLanguages.value,
       thumbnailRefreshRaf: null as number | null,
     };
-  },
-
-  components: { AbsoluteMenu, Modal },
-
-  mounted() {
-    this.scheduleThumbnailRefresh();
-  },
-
-  unmounted() {
-    if (this.thumbnailRefreshRaf !== null) {
-      window.cancelAnimationFrame(this.thumbnailRefreshRaf);
-      this.thumbnailRefreshRaf = null;
-    }
   },
 
   computed: {
@@ -373,6 +362,17 @@ export default defineComponent({
     filteredProjects() {
       this.scheduleThumbnailRefresh();
     },
+  },
+
+  mounted() {
+    this.scheduleThumbnailRefresh();
+  },
+
+  unmounted() {
+    if (this.thumbnailRefreshRaf !== null) {
+      window.cancelAnimationFrame(this.thumbnailRefreshRaf);
+      this.thumbnailRefreshRaf = null;
+    }
   },
 
   methods: {

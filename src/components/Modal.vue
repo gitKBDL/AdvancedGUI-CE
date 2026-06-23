@@ -7,10 +7,10 @@
       :aria-label="title"
     >
       <h1 v-if="title">
-        <span class="material-icons" v-if="icon">{{ icon }}</span> {{ title }}
+        <span v-if="icon" class="material-icons">{{ icon }}</span> {{ title }}
       </h1>
       <slot></slot>
-      <div class="action-row" v-if="closeBtn">
+      <div v-if="closeBtn" class="action-row">
         <button
           type="button"
           class="btn close"
@@ -27,11 +27,6 @@
 import { defineComponent } from "vue";
 import { t } from "@/utils/i18n";
 export default defineComponent({
-  emits: ["update:modelValue"],
-
-  data() {
-    return { t };
-  },
 
   props: {
     modelValue: {
@@ -47,6 +42,11 @@ export default defineComponent({
     title: {
       type: String,
     },
+  },
+  emits: ["update:modelValue"],
+
+  data() {
+    return { t };
   },
 });
 </script>

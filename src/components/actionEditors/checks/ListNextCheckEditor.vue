@@ -23,17 +23,17 @@ export default defineComponent({
   components: {
     ListNextTargetSection,
   },
-  data() {
-    return {
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => ListNextCheck,
       required: true,
     },
+  },
+  data() {
+    return {
+      t,
+    };
   },
 });
 </script>

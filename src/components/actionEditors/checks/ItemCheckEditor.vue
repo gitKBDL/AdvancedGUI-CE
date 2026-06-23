@@ -3,16 +3,16 @@
     <div class="settings-row">
       <div class="input-box">
         <input
+          v-model.number="action.amount"
           type="number"
           @keypress="inputTransformer($event, action.amount)"
-          v-model.number="action.amount"
         />
         <span class="label">{{ t("item.amount", "Amount") }}</span>
       </div>
     </div>
     <div class="settings-row">
       <span class="label">{{ t("item.name", "Item name") }}</span>
-      <input type="text" v-model="action.itemName" />
+      <input v-model="action.itemName" type="text" />
     </div>
     <p>
       {{
@@ -32,6 +32,13 @@ import { Template } from "@/utils/components/Template";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
+
+  props: {
+    action: {
+      type: Object as () => ItemCheck,
+      required: true,
+    },
+  },
   data() {
     return {
       inputTransformer: Template.inputTransformer,
@@ -45,13 +52,6 @@ export default defineComponent({
       handler(action) {
         if (action.amount === "") this.action.amount = 0;
       },
-    },
-  },
-
-  props: {
-    action: {
-      type: Object as () => ItemCheck,
-      required: true,
     },
   },
 });

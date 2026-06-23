@@ -13,15 +13,15 @@ import { MessageAction } from "@/utils/actions/MessageAction";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     action: {
       type: Object as () => MessageAction,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

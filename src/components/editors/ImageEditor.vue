@@ -5,20 +5,20 @@
       <input
         type="text"
         class="imageNameInput"
-        @input="(val) => component.setImage((val.target as HTMLInputElement).value)"
         :value="component.image"
+        @input="(val) => component.setImage((val.target as HTMLInputElement).value)"
       />
     </div>
     <div class="settings-row imageList">
       <div
-        class="imageBox"
         v-for="img in regImages
           .map((key) => images[key])
           .filter((image) => image.isGif == gifMode)"
         :key="img.name"
+        class="imageBox"
         :style="{ backgroundImage: `url(${img.data.src})` }"
-        @click="component.setImage(img.name)"
         :class="component.image == img.name ? 'active' : ''"
+        @click="component.setImage(img.name)"
       >
         <div class="delImage" @click.stop="unregisterImage(img.name)">
           <span class="material-icons">close</span>
@@ -31,8 +31,8 @@
       {{ t("image.upload", "Upload") }}
       {{ gifMode ? t("image.gif", "GIF") : t("image.image", "image") }}
       <input
-        type="file"
         ref="fileDownload"
+        type="file"
         :accept="gifMode ? '.gif' : '.png,.jpg'"
         style="display: none"
         multiple
@@ -45,9 +45,9 @@
       :max-height="maxHeight"
       :max-width="maxWidth"
     />
-    <div class="settings-row" v-if="gifMode">
+    <div v-if="gifMode" class="settings-row">
       <span class="label">{{ t("image.pause", "Pause by default") }}</span>
-      <input type="checkbox" v-model="(component as GIF).pausedByDefault" />
+      <input v-model="(component as GIF).pausedByDefault" type="checkbox" />
     </div>
   </div>
 </template>
@@ -74,6 +74,14 @@ export default defineComponent({
   components: {
     ImageDimensionsEditor,
   },
+
+  props: {
+    component: {
+      type: Object as () => Image | GIF,
+      required: true,
+    },
+    ...maxBoundsProps,
+  },
   data() {
     return {
       images,
@@ -83,21 +91,13 @@ export default defineComponent({
     };
   },
 
-  props: {
-    component: {
-      type: Object as () => Image | GIF,
-      required: true,
-    },
-    ...maxBoundsProps,
-  },
-
-  watch: ensureBoundsWatch,
-
   computed: {
     gifMode(): boolean {
       return this.component.displayName == "GIF";
     },
   },
+
+  watch: ensureBoundsWatch,
 
   methods: {
     ensureBounds() {

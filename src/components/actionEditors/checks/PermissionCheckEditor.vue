@@ -2,7 +2,7 @@
   <div>
     <div class="settings-row">
       <span class="label">{{ t("permission.permission", "Permission") }}</span>
-      <input type="text" v-model="action.permission" />
+      <input v-model="action.permission" type="text" />
     </div>
   </div>
 </template>
@@ -13,15 +13,15 @@ import { PermissionCheck } from "@/utils/checks/PermissionCheck";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     action: {
       type: Object as () => PermissionCheck,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

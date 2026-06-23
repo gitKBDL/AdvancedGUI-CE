@@ -4,7 +4,7 @@
       <span class="label">{{
         t("placeholder.placeholder", "Placeholder")
       }}</span>
-      <input type="text" v-model="action.placeholder" />
+      <input v-model="action.placeholder" type="text" />
     </div>
     <div class="settings-row">
       <span class="label">
@@ -24,8 +24,8 @@
     <div class="settings-row">
       <span class="label">{{ t("placeholder.value", "Value") }}</span>
       <input
-        :type="action.compType == -1 ? 'text' : 'number'"
         v-model="action.value"
+        :type="action.compType == -1 ? 'text' : 'number'"
       />
     </div>
     <p v-if="action.compType == -1">
@@ -55,15 +55,15 @@ import { PlaceholderCheck } from "@/utils/checks/PlaceholderCheck";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     action: {
       type: Object as () => PlaceholderCheck,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 
   computed: {

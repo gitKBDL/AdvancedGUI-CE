@@ -1,7 +1,7 @@
 <template>
   <div id="hoverSettings">
     <div class="settings-row">
-      <input type="checkbox" v-model="component.drawHovered" />
+      <input v-model="component.drawHovered" type="checkbox" />
       <span class="label">{{ t("hover.show", "Show hovered component") }}</span>
     </div>
     <div class="settings-row">
@@ -23,15 +23,15 @@ import { Hover } from "@/utils/components/Hover";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     component: {
       type: Object as () => Hover,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

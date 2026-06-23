@@ -3,10 +3,10 @@
     <div class="settings-row">
       <span class="label">{{ t("replica.templateId", "Template ID") }}</span>
       <input
+        v-model="component.targetId"
         type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (component.targetId = val)"
-        v-model="component.targetId"
       />
     </div>
     <p
@@ -30,11 +30,11 @@
     <div class="label heading">{{ t("replica.position", "Position") }}</div>
     <div class="settings-row">
       <div class="input-box">
-        <input type="number" v-model.number="component.position.x" />
+        <input v-model.number="component.position.x" type="number" />
         <span>X</span>
       </div>
       <div class="input-box">
-        <input type="number" v-model.number="component.position.y" />
+        <input v-model.number="component.position.y" type="number" />
         <span>Y</span>
       </div>
     </div>
@@ -47,10 +47,10 @@
       <span class="label normalCase">#{{ data.name }} = </span>
       <input
         v-if="typeof data.value == 'number'"
-        type="number"
         v-model.number="data.value"
+        type="number"
       />
-      <input v-else type="text" v-model="data.value" />
+      <input v-else v-model="data.value" type="text" />
     </div>
   </div>
 </template>
@@ -64,14 +64,6 @@ import { vueRef } from "../../utils/VueRef";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      components,
-      defaultData: undefined as undefined | TemplateData,
-      idWatcher: vueRef(idWatcher),
-      t,
-    };
-  },
 
   props: {
     component: {
@@ -79,9 +71,13 @@ export default defineComponent({
       required: true,
     },
   },
-
-  mounted() {
-    this.defaultData = this.component.getTemplateDefaultData();
+  data() {
+    return {
+      components,
+      defaultData: undefined as undefined | TemplateData,
+      idWatcher: vueRef(idWatcher),
+      t,
+    };
   },
 
   watch: {
@@ -102,6 +98,10 @@ export default defineComponent({
         this.updateTemplateData();
       },
     },
+  },
+
+  mounted() {
+    this.defaultData = this.component.getTemplateDefaultData();
   },
 
   methods: {

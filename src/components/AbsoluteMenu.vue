@@ -1,8 +1,8 @@
 <template>
   <teleport to="body">
-    <div class="absoluteMenu" ref="menu">
+    <div ref="menu" class="absoluteMenu">
       <div v-for="(entry, index) in entries" :key="index">
-        <div class="divider" v-if="index != 0"></div>
+        <div v-if="index != 0" class="divider"></div>
         <div class="entry" @click.stop="entry.action">
           <span class="material-icons">{{ entry.icon }}</span>
           {{ entry.name }}
@@ -27,16 +27,16 @@ export default defineComponent({
     },
   },
 
+  data() {
+    return {};
+  },
+
   mounted() {
     document.addEventListener("click", this.checkClose, { capture: true });
   },
 
   unmounted() {
     document.removeEventListener("click", this.checkClose, { capture: true });
-  },
-
-  data() {
-    return {};
   },
 
   methods: {

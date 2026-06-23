@@ -13,11 +13,11 @@
       </div>
     </div>
     <div class="center">
-      <input class="inputProjectName" type="text" v-model="projectNameModel" />
+      <input v-model="projectNameModel" class="inputProjectName" type="text" />
       <div class="size">
-        <input type="number" v-model.number="settings.width" />
+        <input v-model.number="settings.width" type="number" />
         <span class="label">x</span>
-        <input type="number" v-model.number="settings.height" />
+        <input v-model.number="settings.height" type="number" />
         <span class="label">{{ t("header.sizeFrames", "frames") }}</span>
         <span class="sizeResolution"
           >({{ pixelWidth }}:{{ pixelHeight }} px)</span
@@ -60,10 +60,10 @@
     </div>
     <teleport to="body">
       <modal
+        v-model="showShortcuts"
         :title="t('header.shortcuts.title', 'Shortcuts')"
         icon="keyboard"
-        v-model="showShortcuts"
-        closeBtn
+        close-btn
       >
         <p class="shortcuts">
           <span>{{ modKeyLabel }}</span> <span>C</span> &ensp;

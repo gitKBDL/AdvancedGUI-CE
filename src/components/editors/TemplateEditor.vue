@@ -16,14 +16,14 @@
         <option :value="true">{{ t("common.number", "Number") }}</option>
         <option :value="false">{{ t("common.text", "Text") }}</option>
       </select>
-      <span class="label">#</span><input type="text" v-model="data.name" />
+      <span class="label">#</span><input v-model="data.name" type="text" />
       <span class="label">=</span>
       <input
         v-if="typeof data.value == 'number'"
-        type="number"
         v-model.number="data.value"
+        type="number"
       />
-      <input v-else type="text" v-model="data.value" />
+      <input v-else v-model="data.value" type="text" />
       <span
         class="material-icons closeIcon"
         @click="component.defaultData.splice(i, 1)"
@@ -54,15 +54,15 @@ import { Template } from "@/utils/components/Template";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     component: {
       type: Object as () => Template,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

@@ -6,7 +6,7 @@
     ></color-input>
     <div class="settings-row">
       <span class="label">{{ t("text.text", "Text") }}</span>
-      <textarea :rows="5" v-model="component.text" />
+      <textarea v-model="component.text" :rows="5" />
     </div>
     <p style="font-size: 10pt">
       {{
@@ -20,9 +20,9 @@
       <span class="label">
         {{ t("text.containsPlaceholder", "Contains placeholders") }}
       </span>
-      <input type="checkbox" v-model="component.placeholder" />
+      <input v-model="component.placeholder" type="checkbox" />
     </div>
-    <div class="settings-row" v-if="component.placeholder">
+    <div v-if="component.placeholder" class="settings-row">
       <span class="label">{{ t("text.preview", "Preview Text") }}</span>
       <textarea v-model="component.previewText" />
     </div>
@@ -32,22 +32,22 @@
       <div class="alignOptions">
         <i
           class="material-icons"
-          @click="component.alignment = 0"
           :class="component.alignment == 0 ? 'active' : ''"
+          @click="component.alignment = 0"
         >
           format_align_left
         </i>
         <i
           class="material-icons"
-          @click="component.alignment = 1"
           :class="component.alignment == 1 ? 'active' : ''"
+          @click="component.alignment = 1"
         >
           format_align_center
         </i>
         <i
           class="material-icons"
-          @click="component.alignment = 2"
           :class="component.alignment == 2 ? 'active' : ''"
+          @click="component.alignment = 2"
         >
           format_align_right
         </i>
@@ -60,21 +60,21 @@
     <div class="label heading">{{ t("text.pixelBounds", "Pixel bounds") }}</div>
     <div class="settings-row">
       <span class="label">{{ t("text.verticalCrop", "Vertical crop") }}</span>
-      <input type="checkbox" v-model="settings.textVerticalPixelCrop" />
+      <input v-model="settings.textVerticalPixelCrop" type="checkbox" />
     </div>
     <div class="settings-row">
       <span class="label">{{
         t("text.horizontalAlignCrop", "Horizontal align by pixels")
       }}</span>
-      <input type="checkbox" v-model="settings.textHorizontalPixelAlign" />
+      <input v-model="settings.textHorizontalPixelAlign" type="checkbox" />
     </div>
     <div class="label heading">{{ t("text.position", "Position") }}</div>
     <div class="settings-row">
       <div class="input-box">
-        <input type="number" v-model.number="component.x" /> <span>X</span>
+        <input v-model.number="component.x" type="number" /> <span>X</span>
       </div>
       <div class="input-box">
-        <input type="number" v-model.number="component.y" /> <span>Y</span>
+        <input v-model.number="component.y" type="number" /> <span>Y</span>
       </div>
     </div>
   </div>
@@ -89,9 +89,6 @@ import { t } from "@/utils/i18n";
 import { settings } from "@/utils/manager/SettingsManager";
 
 export default defineComponent({
-  data() {
-    return { t, settings };
-  },
 
   components: { FontEditor, ColorInput },
 
@@ -100,6 +97,9 @@ export default defineComponent({
       type: Object as () => Text,
       required: true,
     },
+  },
+  data() {
+    return { t, settings };
   },
 
   watch: {

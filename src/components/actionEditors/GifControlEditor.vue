@@ -3,10 +3,10 @@
     <div class="settings-row">
       <span class="label">{{ t("gif.targetId", "GIF Component ID") }}</span>
       <input
+        v-model="action.targetId"
         type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (action.targetId = val)"
-        v-model="action.targetId"
       />
     </div>
     <p
@@ -29,11 +29,11 @@
     </p>
     <div class="settings-row">
       <span class="label">{{ t("gif.pause", "Pause GIF") }}</span>
-      <input type="checkbox" v-model="action.pause" />
+      <input v-model="action.pause" type="checkbox" />
     </div>
     <div class="settings-row">
       <span class="label">{{ t("gif.reset", "Reset GIF") }}</span>
-      <input type="checkbox" v-model="action.reset" />
+      <input v-model="action.reset" type="checkbox" />
     </div>
     <p class="label">
       {{
@@ -60,19 +60,19 @@ import { vueRef } from "../../utils/VueRef";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      components,
-      idWatcher: vueRef(idWatcher),
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => GifControlAction,
       required: true,
     },
+  },
+  data() {
+    return {
+      components,
+      idWatcher: vueRef(idWatcher),
+      t,
+    };
   },
 });
 </script>

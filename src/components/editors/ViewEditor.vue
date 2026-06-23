@@ -37,15 +37,15 @@ import { View } from "@/utils/components/View";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     component: {
       type: Object as () => View,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

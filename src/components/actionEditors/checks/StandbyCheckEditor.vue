@@ -17,14 +17,14 @@ import { StandbyCheck } from "@/utils/checks/StandbyCheck";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
   props: {
     action: {
       type: Object as () => StandbyCheck,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

@@ -8,7 +8,7 @@ export type TemplateVariable = string;
 export type TemplateData = { name: string; value: string | number }[];
 
 export interface JsonObject {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   [key: string]: any;
 }
 

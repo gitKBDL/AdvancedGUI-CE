@@ -19,8 +19,8 @@
       >
         <option
           v-for="font in regFonts"
-          :style="{ fontFamily: font }"
           :key="font"
+          :style="{ fontFamily: font }"
           :value="font"
         >
           {{ font }}
@@ -34,8 +34,8 @@
       {{ t("font.upload", "Upload custom font") }}
     </a>
     <input
-      type="file"
       ref="fileDownload"
+      type="file"
       accept=".ttf"
       style="display: none"
       @change="checkForUpload()"
@@ -49,15 +49,15 @@ import { regFonts, registerFont } from "../utils/manager/FontManager";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  emits: ["update:size", "update:font"],
-
-  data() {
-    return { regFonts, t };
-  },
 
   props: {
     font: String,
     size: Number,
+  },
+  emits: ["update:size", "update:font"],
+
+  data() {
+    return { regFonts, t };
   },
 
   methods: {

@@ -5,10 +5,10 @@
         t("visibility.componentId", "Component ID")
       }}</span>
       <input
+        v-model="action.targetId"
         type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (action.targetId = val)"
-        v-model="action.targetId"
       />
     </div>
     <p class="label" :class="components[action.targetId] ? '' : 'red-text'">
@@ -21,7 +21,7 @@
     </p>
     <div class="settings-row">
       <span class="label">{{ t("visibility.visible", "Visible") }}</span>
-      <input type="checkbox" v-model="action.visibility" />
+      <input v-model="action.visibility" type="checkbox" />
     </div>
     <p class="label">
       {{
@@ -47,19 +47,19 @@ import { vueRef } from "../../utils/VueRef";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      components,
-      idWatcher: vueRef(idWatcher),
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => VisibilityAction,
       required: true,
     },
+  },
+  data() {
+    return {
+      components,
+      idWatcher: vueRef(idWatcher),
+      t,
+    };
   },
 });
 </script>

@@ -1,11 +1,11 @@
 <template>
   <div class="settings-row">
     <span class="label">{{ label || t("color.default", "Color") }}</span>
-    <input type="color" v-model="colorHex" @input="updateColor" />
+    <input v-model="colorHex" type="color" @input="updateColor" />
     <input
+      v-model="colorHex"
       type="text"
       style="max-width: 60px"
-      v-model="colorHex"
       @input="updateColor"
     />
     <input
@@ -26,7 +26,7 @@
     />
     <i style="opacity: 0.5">%</i>
   </div>
-  <div class="settings-row" v-if="devMode">
+  <div v-if="devMode" class="settings-row">
     <span class="label">{{ t("color.dev", "Dev Color") }}</span>
     <input
       type="text"
@@ -45,14 +45,6 @@ import { vueRef } from "../utils/VueRef";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      devMode: vueRef(devMode),
-      colorHex: "#FFFFFF",
-      alpha: 1.0,
-      t,
-    };
-  },
 
   props: {
     color: {
@@ -66,6 +58,14 @@ export default defineComponent({
   },
 
   emits: ["update:color"],
+  data() {
+    return {
+      devMode: vueRef(devMode),
+      colorHex: "#FFFFFF",
+      alpha: 1.0,
+      t,
+    };
+  },
 
   watch: {
     color: {

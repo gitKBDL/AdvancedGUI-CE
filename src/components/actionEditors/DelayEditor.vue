@@ -3,9 +3,9 @@
     <div class="settings-row">
       <div class="input-box">
         <input
+          v-model.number="action.ticks"
           type="number"
           @keypress="inputTransformer($event, action.ticks)"
-          v-model.number="action.ticks"
         />
         <span>{{ t("delay.ticks", "ticks") }}</span>
       </div>
@@ -29,18 +29,18 @@ import { Template } from "@/utils/components/Template";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      inputTransformer: Template.inputTransformer,
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => DelayAction,
       required: true,
     },
+  },
+  data() {
+    return {
+      inputTransformer: Template.inputTransformer,
+      t,
+    };
   },
 });
 </script>

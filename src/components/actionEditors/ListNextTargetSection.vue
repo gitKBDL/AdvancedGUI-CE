@@ -3,11 +3,11 @@
     <div class="settings-row">
       <span class="label">{{ t("listNext.viewId", "View ID") }}</span>
       <input
-        type="text"
         ref="test"
+        v-model="action.targetId"
+        type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (action.targetId = val)"
-        v-model="action.targetId"
       />
     </div>
     <p
@@ -44,19 +44,19 @@ type ListNextTargetAction = {
 };
 
 export default defineComponent({
-  data() {
-    return {
-      components,
-      idWatcher: vueRef(idWatcher),
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as PropType<ListNextTargetAction>,
       required: true,
     },
+  },
+  data() {
+    return {
+      components,
+      idWatcher: vueRef(idWatcher),
+      t,
+    };
   },
 });
 </script>

@@ -4,10 +4,10 @@
     <div class="settings-row">
       <span class="label">{{ t("rect.radius", "Border-radius") }}</span>
       <input
+        v-model.number="component.radius"
         type="number"
         onkeypress="return event.charCode >= 48 && event.charCode <= 57;"
         style="width: 48px"
-        v-model.number="component.radius"
       />
     </div>
     <br />
@@ -25,11 +25,6 @@ import BoundingBoxInputs from "./BoundingBoxInputs.vue";
 
 export default defineComponent({
   components: { ColorInput, BoundingBoxInputs },
-  data() {
-    return {
-      t,
-    };
-  },
 
   props: {
     component: {
@@ -44,6 +39,11 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+  },
+  data() {
+    return {
+      t,
+    };
   },
 
   watch: {

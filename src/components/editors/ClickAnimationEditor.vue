@@ -1,7 +1,7 @@
 <template>
   <div id="hoverSettings">
     <div class="settings-row">
-      <input type="checkbox" v-model="component.drawClicked" />
+      <input v-model="component.drawClicked" type="checkbox" />
       <span class="label">{{ t("click.show", "Show clicked component") }}</span>
     </div>
     <div class="settings-row">
@@ -23,15 +23,15 @@ import { ClickAnimation } from "@/utils/components/ClickAnimation";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return { t };
-  },
 
   props: {
     component: {
       type: Object as () => ClickAnimation,
       required: true,
     },
+  },
+  data() {
+    return { t };
   },
 });
 </script>

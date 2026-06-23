@@ -1,6 +1,6 @@
 <template>
   <div id="settings">
-    <div id="generalSettings" v-if="selection">
+    <div v-if="selection" id="generalSettings">
       <div class="settings-box gen-box">
         <h1>
           <span
@@ -13,21 +13,21 @@
         </h1>
         <div class="settings-row">
           <span class="label">{{ t("sidebar.name", "Name") }}</span>
-          <input type="text" v-model="selection.component.name" />
+          <input v-model="selection.component.name" type="text" />
         </div>
         <div class="settings-row id-box">
           <span class="label">{{ t("sidebar.id", "ID") }}</span>
           <input
+            ref="idInput"
             type="text"
             :value="selection.component.id"
             @input="onIdInput"
-            ref="idInput"
           />
-          <span class="material-icons" @click="copyID()" ref="copyIcon"
+          <span ref="copyIcon" class="material-icons" @click="copyID()"
             >content_copy</span
           >
         </div>
-        <div class="settings-row" v-if="selection.component.hideable">
+        <div v-if="selection.component.hideable" class="settings-row">
           <span class="label">{{ t("sidebar.visibility", "Visibility") }}</span>
           <input
             type="checkbox"
@@ -37,9 +37,9 @@
         </div>
         <div class="settings-row">
           <span class="label">{{ t("sidebar.lock", "Lock") }}</span>
-          <input type="checkbox" v-model="selection.component.locked" />
+          <input v-model="selection.component.locked" type="checkbox" />
         </div>
-        <div class="alignBlock" v-if="canAlign">
+        <div v-if="canAlign" class="alignBlock">
           <div class="settings-row alignRow">
             <span class="label">{{
               t("sidebar.align.scope", "Align to")
@@ -71,20 +71,20 @@
             <div class="alignButtons">
               <span
                 class="material-icons"
-                @click="alignSelected('x', 'start')"
                 title="Align left"
+                @click="alignSelected('x', 'start')"
                 >align_horizontal_left</span
               >
               <span
                 class="material-icons"
-                @click="alignSelected('x', 'center')"
                 title="Align center"
+                @click="alignSelected('x', 'center')"
                 >align_horizontal_center</span
               >
               <span
                 class="material-icons"
-                @click="alignSelected('x', 'end')"
                 title="Align right"
+                @click="alignSelected('x', 'end')"
                 >align_horizontal_right</span
               >
             </div>
@@ -96,20 +96,20 @@
             <div class="alignButtons">
               <span
                 class="material-icons"
-                @click="alignSelected('y', 'start')"
                 title="Align top"
+                @click="alignSelected('y', 'start')"
                 >align_vertical_top</span
               >
               <span
                 class="material-icons"
-                @click="alignSelected('y', 'center')"
                 title="Align middle"
+                @click="alignSelected('y', 'center')"
                 >align_vertical_center</span
               >
               <span
                 class="material-icons"
-                @click="alignSelected('y', 'end')"
                 title="Align bottom"
+                @click="alignSelected('y', 'end')"
                 >align_vertical_bottom</span
               >
             </div>
@@ -126,16 +126,16 @@
           <component-list
             root
             :components="selection.component.clickAction"
-            :modelValue="selection.action"
-            @update:modelValue="(val) => selection && (selection.action = val.value)"
+            :model-value="selection.action"
+            @update:model-value="(val) => selection && (selection.action = val.value)"
             @deleted="checkDelete"
             @copy="(val) => (copiedAction = val)"
             @add-child="addActionToTree"
           ></component-list>
           <div class="settings-row">
             <div
-              class="btn addAction"
               ref="addActionBtn"
+              class="btn addAction"
               @click.stop="toggleActionAddMenu"
             >
               <span class="material-icons">add</span>
@@ -144,8 +144,8 @@
               }}</span>
 
               <div
-                class="absoluteMenu actionAddMenu"
                 ref="actionAddMenu"
+                class="absoluteMenu actionAddMenu"
                 @mousedown.stop
                 @click.stop
               >
@@ -157,7 +157,7 @@
                   <div class="divider"></div>
                 </template>
                 <div v-for="(key, index) in actionIDs" :key="index">
-                  <div class="divider" v-if="index != 0"></div>
+                  <div v-if="index != 0" class="divider"></div>
                   <div class="entry" @click.stop="addNewAction(key)">
                     <span class="material-icons">{{ actions[key].icon }}</span>
                     {{ t(`action.${key}`, key) }}
@@ -174,7 +174,7 @@
               {{ t(`action.${selection.action.id}`, selection.action.id) }}
             </h2>
             <component
-              v-bind:is="actions[selection.action.id].component"
+              :is="actions[selection.action.id].component"
               :action="
                 selection.action.isCheck()
                   ? selection.action.check
@@ -195,17 +195,17 @@
             )
           }}
         </h1>
-        <div class="settings-row" v-if="fillCanvasTarget">
+        <div v-if="fillCanvasTarget" class="settings-row">
           <div class="btn fillCanvas" @click="fillCanvas">
             <span class="material-icons">wallpaper</span>
             <span class="text">{{ t("image.fillCanvas", "Fill canvas") }}</span>
           </div>
         </div>
         <component
-          v-bind:is="selection.component.vueComponent"
+          :is="selection.component.vueComponent"
           :component="selection.component"
-          :maxWidth="settings.width * 128"
-          :maxHeight="settings.height * 128"
+          :max-width="settings.width * 128"
+          :max-height="settings.height * 128"
         ></component>
       </div>
     </div>

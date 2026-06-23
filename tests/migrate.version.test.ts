@@ -40,7 +40,7 @@ import {
   PluginParseError,
 } from "./contract/pluginDeserializers";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 
 /** Minimal component node that satisfies traverseComponent's `comp.action.forEach`. */
 function comp(extra: Record<string, any> = {}): any {

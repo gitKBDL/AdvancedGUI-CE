@@ -5,10 +5,10 @@
       <input
         type="text"
         class="imageNameInput"
+        :value="component.imageUrl"
         @input="
           (val) => component.setImageUrl((val.target as HTMLInputElement).value)
         "
-        :value="component.imageUrl"
       />
     </div>
     <br />
@@ -21,7 +21,7 @@
       <span class="label">
         {{ t("image.previewLoading", "Preview loading component") }}
       </span>
-      <input type="checkbox" v-model="component.drawLoading" />
+      <input v-model="component.drawLoading" type="checkbox" />
     </div>
   </div>
 </template>
@@ -41,11 +41,6 @@ export default defineComponent({
   components: {
     ImageDimensionsEditor,
   },
-  data() {
-    return {
-      t,
-    };
-  },
 
   props: {
     component: {
@@ -53,6 +48,11 @@ export default defineComponent({
       required: true,
     },
     ...maxBoundsProps,
+  },
+  data() {
+    return {
+      t,
+    };
   },
 
   watch: ensureBoundsWatch,

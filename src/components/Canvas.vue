@@ -6,7 +6,7 @@
     @mousemove="onMove"
     @mouseleave="onClickUp"
   >
-    <canvas ref="canvas" id="canvas" :width="width" :height="height"></canvas>
+    <canvas id="canvas" ref="canvas" :width="width" :height="height"></canvas>
   </div>
 </template>
 
@@ -117,33 +117,6 @@ export default defineComponent({
     };
   },
 
-  mounted() {
-    this.adjustHeight();
-
-    const canvas = (this.$refs.canvas as HTMLCanvasElement).getContext(
-      "2d",
-    ) as CanvasRenderingContext2D;
-
-    canvas.imageSmoothingEnabled = false;
-
-    this.redraw(true);
-  },
-
-  unmounted() {
-    if (this.redrawRafId !== null) {
-      window.cancelAnimationFrame(this.redrawRafId);
-      this.redrawRafId = null;
-      this.redrawQueued = false;
-    }
-    if (this.modifying) {
-      this.modifying.component.endResize();
-      this.modifying = null;
-      resumeHistoryTracking();
-    }
-    this.moveTargetsCache = null;
-    this.hitGrid = null;
-  },
-
   computed: {
     height(): number {
       return this.settings.height * 128;
@@ -243,6 +216,33 @@ export default defineComponent({
         this.redraw();
       },
     },
+  },
+
+  mounted() {
+    this.adjustHeight();
+
+    const canvas = (this.$refs.canvas as HTMLCanvasElement).getContext(
+      "2d",
+    ) as CanvasRenderingContext2D;
+
+    canvas.imageSmoothingEnabled = false;
+
+    this.redraw(true);
+  },
+
+  unmounted() {
+    if (this.redrawRafId !== null) {
+      window.cancelAnimationFrame(this.redrawRafId);
+      this.redrawRafId = null;
+      this.redrawQueued = false;
+    }
+    if (this.modifying) {
+      this.modifying.component.endResize();
+      this.modifying = null;
+      resumeHistoryTracking();
+    }
+    this.moveTargetsCache = null;
+    this.hitGrid = null;
   },
 
   methods: {

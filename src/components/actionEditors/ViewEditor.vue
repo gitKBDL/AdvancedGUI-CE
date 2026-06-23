@@ -3,10 +3,10 @@
     <div class="settings-row">
       <span class="label">{{ t("view.viewId", "View ID") }}</span>
       <input
+        v-model="action.targetId"
         type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (action.targetId = val)"
-        v-model="action.targetId"
       />
     </div>
     <p
@@ -30,10 +30,10 @@
     <div class="settings-row">
       <span class="label">{{ t("view.targetId", "Target ID") }}</span>
       <input
+        v-model="action.activate"
         type="text"
         class="componentIdInput"
         @focus="idWatcher = (val) => (action.activate = val)"
-        v-model="action.activate"
       />
     </div>
     <p
@@ -70,19 +70,19 @@ import { vueRef } from "../../utils/VueRef";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
-  data() {
-    return {
-      components,
-      idWatcher: vueRef(idWatcher),
-      t,
-    };
-  },
 
   props: {
     action: {
       type: Object as () => ViewAction,
       required: true,
     },
+  },
+  data() {
+    return {
+      components,
+      idWatcher: vueRef(idWatcher),
+      t,
+    };
   },
 
   methods: {
