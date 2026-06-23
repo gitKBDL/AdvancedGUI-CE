@@ -8,7 +8,7 @@
       <select
         :value="typeof data.value == 'number'"
         @change="
-          $event.target.value == 'true'
+          ($event.target as HTMLSelectElement).value == 'true'
             ? (data.value = 123)
             : (data.value = 'value')
         "

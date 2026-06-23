@@ -5,7 +5,7 @@
       <input
         type="text"
         class="imageNameInput"
-        @input="(val) => component.setImage(val.target.value)"
+        @input="(val) => component.setImage((val.target as HTMLInputElement).value)"
         :value="component.image"
       />
     </div>
@@ -47,7 +47,7 @@
     />
     <div class="settings-row" v-if="gifMode">
       <span class="label">{{ t("image.pause", "Pause by default") }}</span>
-      <input type="checkbox" v-model="component.pausedByDefault" />
+      <input type="checkbox" v-model="(component as GIF).pausedByDefault" />
     </div>
   </div>
 </template>

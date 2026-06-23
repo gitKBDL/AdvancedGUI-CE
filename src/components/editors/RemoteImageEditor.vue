@@ -5,7 +5,9 @@
       <input
         type="text"
         class="imageNameInput"
-        @input="(val) => component.setImageUrl(val.target.value)"
+        @input="
+          (val) => component.setImageUrl((val.target as HTMLInputElement).value)
+        "
         :value="component.imageUrl"
       />
     </div>

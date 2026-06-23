@@ -331,7 +331,7 @@ describe("action tree -> clickAction conversion", () => {
         // ... and must land inside the plugin's 0..4 enum range.
         expect(() => deserializeComparisonType(comparisonType)).not.toThrow();
         expect(deserializeComparisonType(comparisonType)).toBe(
-          PLUGIN_COMPARISON_TYPES[ordinal],
+          PLUGIN_COMPARISON_TYPES[ordinal as number],
         );
       }
     });

@@ -74,8 +74,8 @@
           "
           draggable="true"
           ondragstart="event.dataTransfer.setData('text/plain', null)"
-          @dragstart.self="(ev) => dragStart(ev.target, elem, index)"
-          @dragend.self="(ev) => dragEnd(ev.target)"
+          @dragstart.self="(ev) => dragStart(ev.target as HTMLElement, elem, index)"
+          @dragend.self="(ev) => dragEnd(ev.target as HTMLElement)"
           @dragover.prevent
         >
           <div class="itemName row">
@@ -157,7 +157,7 @@ export default defineComponent({
       required: true,
     },
     modelValue: {
-      type: Object as () => ListItem,
+      type: Object as () => ListItem | null,
     },
     root: {
       type: Boolean,

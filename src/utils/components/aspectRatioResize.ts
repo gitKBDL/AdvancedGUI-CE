@@ -19,7 +19,7 @@ export interface AspectRatioResizeResult {
 }
 
 function hasPositiveLimit(value: number | undefined): value is number {
-  return Number.isFinite(value) && value > 0;
+  return value !== undefined && Number.isFinite(value) && value > 0;
 }
 
 export function applyAspectRatioResize(

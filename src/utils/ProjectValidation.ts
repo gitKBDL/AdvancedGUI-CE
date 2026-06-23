@@ -80,7 +80,7 @@ function getComponentTree(value: unknown): Project["componentTree"] | null {
   const cloned = cloneJson(value);
   if (!cloned || !isRecord(cloned)) return null;
   if (!Array.isArray(cloned.components)) return null;
-  return cloned as Project["componentTree"];
+  return cloned as unknown as Project["componentTree"];
 }
 
 function getExportedTree(
@@ -97,7 +97,7 @@ function getExportedTree(
   if (!draft) return fallback;
 
   return {
-    draft: draft as Project["exportedTree"]["draft"],
+    draft: draft as unknown as Project["exportedTree"]["draft"],
   };
 }
 

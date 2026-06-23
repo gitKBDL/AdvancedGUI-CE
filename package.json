@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint . --ext .ts,.tsx,.vue",
+    "typecheck": "vue-tsc --noEmit",
     "deploy": "VITE_BASE=/AdvancedGUI-CE/ npm run build && gh-pages -d dist"
   },
   "dependencies": {
@@ -34,7 +35,8 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "vue-tsc": "^2.2.12"
   },
   "overrides": {
     "serialize-javascript": "7.0.4"

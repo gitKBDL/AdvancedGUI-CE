@@ -127,7 +127,7 @@
             root
             :components="selection.component.clickAction"
             :modelValue="selection.action"
-            @update:modelValue="(val) => (selection.action = val.value)"
+            @update:modelValue="(val) => selection && (selection.action = val.value)"
             @deleted="checkDelete"
             @copy="(val) => (copiedAction = val)"
             @add-child="addActionToTree"

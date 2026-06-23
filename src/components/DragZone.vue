@@ -2,8 +2,12 @@
   <div
     :class="!dragIndication ? 'invisible' : ''"
     class="dropzone"
-    @dragover.prevent.self="(ev) => ev.target.classList.add('targeted')"
-    @dragleave.self="(ev) => ev.target.classList.remove('targeted')"
+    @dragover.prevent.self="
+      (ev) => (ev.target as HTMLElement).classList.add('targeted')
+    "
+    @dragleave.self="
+      (ev) => (ev.target as HTMLElement).classList.remove('targeted')
+    "
     @drop.prevent.self="$emit('droped')"
   ></div>
 </template>

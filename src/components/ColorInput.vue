@@ -13,8 +13,14 @@
       style="max-width: 40px; text-align: right"
       :value="alpha * 100"
       @input="
-        alpha = Math.max(Math.min(Math.round($event.target.value) / 100, 1), 0);
-        $event.target.value = alpha * 100;
+        alpha = Math.max(
+          Math.min(
+            Math.round(Number(($event.target as HTMLInputElement).value)) / 100,
+            1,
+          ),
+          0,
+        );
+        ($event.target as HTMLInputElement).value = String(alpha * 100);
         updateColor();
       "
     />
@@ -26,7 +32,7 @@
       type="text"
       style="max-width: 157px"
       :value="color"
-      @input="$emit('update:color', $event.target.value)"
+      @input="$emit('update:color', ($event.target as HTMLInputElement).value)"
     />
   </div>
 </template>

@@ -322,9 +322,9 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
   it.each(cases)("returns [] for %s when missing or not an array", (key) => {
     const raw = makeValidRaw();
     delete (raw as Record<string, unknown>)[key];
-    expect((sanitizeImportedProjectData(raw) as Record<string, unknown>)?.[key]).toEqual([]);
+    expect((sanitizeImportedProjectData(raw) as unknown as Record<string, unknown>)?.[key]).toEqual([]);
     expect(
-      (sanitizeImportedProjectData(makeValidRaw({ [key]: 7 })) as Record<
+      (sanitizeImportedProjectData(makeValidRaw({ [key]: 7 })) as unknown as Record<
         string,
         unknown
       >)?.[key],
@@ -346,7 +346,7 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
         ],
       }),
     );
-    const list = (result as Record<string, unknown>)?.[key] as Array<{
+    const list = (result as unknown as Record<string, unknown>)?.[key] as Array<{
       name: string;
       data: string;
     }>;
@@ -357,7 +357,7 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
     const result = sanitizeImportedProjectData(
       makeValidRaw({ [key]: [{ name: "  Arial  ", data: "d" }] }),
     );
-    const list = (result as Record<string, unknown>)?.[key] as Array<{
+    const list = (result as unknown as Record<string, unknown>)?.[key] as Array<{
       name: string;
       data: string;
     }>;
@@ -368,7 +368,7 @@ describe("sanitizeImportedProjectData — fonts/images/gifs scrubbing (plugin as
     const result = sanitizeImportedProjectData(
       makeValidRaw({ [key]: [{ name: "n", data: "  spaced-data  " }] }),
     );
-    const list = (result as Record<string, unknown>)?.[key] as Array<{
+    const list = (result as unknown as Record<string, unknown>)?.[key] as Array<{
       name: string;
       data: string;
     }>;
@@ -381,7 +381,7 @@ describe("sanitizeImportedProjectData — exportedTree handling", () => {
     const draft = makeTree({ marker: "exported" });
     const raw = makeValidRaw({ exportedTree: { draft } });
     const result = sanitizeImportedProjectData(raw);
-    expect((result?.exportedTree.draft as Record<string, unknown>).marker).toBe(
+    expect((result?.exportedTree.draft as unknown as Record<string, unknown>).marker).toBe(
       "exported",
     );
     expect(result?.exportedTree.draft).not.toBe(draft);
@@ -391,7 +391,7 @@ describe("sanitizeImportedProjectData — exportedTree handling", () => {
     const raw = makeValidRaw({ componentTree: makeTree({ marker: "ct" }) });
     delete (raw as Record<string, unknown>).exportedTree;
     const result = sanitizeImportedProjectData(raw);
-    expect((result?.exportedTree.draft as Record<string, unknown>).marker).toBe(
+    expect((result?.exportedTree.draft as unknown as Record<string, unknown>).marker).toBe(
       "ct",
     );
     // The fallback is a *clone* of the (already cloned) componentTree, so it is
@@ -407,7 +407,7 @@ describe("sanitizeImportedProjectData — exportedTree handling", () => {
         componentTree: makeTree({ marker: "ct2" }),
       }),
     );
-    expect((result?.exportedTree.draft as Record<string, unknown>).marker).toBe(
+    expect((result?.exportedTree.draft as unknown as Record<string, unknown>).marker).toBe(
       "ct2",
     );
   });
@@ -419,7 +419,7 @@ describe("sanitizeImportedProjectData — exportedTree handling", () => {
         componentTree: makeTree({ marker: "ct3" }),
       }),
     );
-    expect((result?.exportedTree.draft as Record<string, unknown>).marker).toBe(
+    expect((result?.exportedTree.draft as unknown as Record<string, unknown>).marker).toBe(
       "ct3",
     );
 
@@ -429,7 +429,7 @@ describe("sanitizeImportedProjectData — exportedTree handling", () => {
         componentTree: makeTree({ marker: "ct4" }),
       }),
     );
-    expect((result2?.exportedTree.draft as Record<string, unknown>).marker).toBe(
+    expect((result2?.exportedTree.draft as unknown as Record<string, unknown>).marker).toBe(
       "ct4",
     );
   });

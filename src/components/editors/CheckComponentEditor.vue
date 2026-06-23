@@ -10,7 +10,10 @@
       <div class="input-box">
         <select
           :value="component.check.name"
-          @change="component.check = checks[$event.target.value].generator()"
+          @change="
+            component.check =
+              checks[($event.target as HTMLSelectElement).value].generator()
+          "
         >
           <option
             v-for="checkType in checkIDs"

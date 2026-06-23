@@ -29,7 +29,7 @@ export class DelayAction extends Action implements ListItemGroup<Action> {
     return this.children;
   }
 
-  isGroup() {
+  isGroup(): this is ListItemGroup<this> {
     return true;
   }
 

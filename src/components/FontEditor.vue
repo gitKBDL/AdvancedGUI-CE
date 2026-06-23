@@ -4,14 +4,19 @@
       <input
         type="number"
         :value="size"
-        @input="$emit('update:size', Number($event.target.value))"
+        @input="
+          $emit('update:size', Number(($event.target as HTMLInputElement).value))
+        "
       />
       <span>{{ t("font.size", "Size") }}</span>
     </div>
   </div>
   <div class="settings-row">
     <div class="input-box">
-      <select :value="font" @input="$emit('update:font', $event.target.value)">
+      <select
+        :value="font"
+        @input="$emit('update:font', ($event.target as HTMLSelectElement).value)"
+      >
         <option
           v-for="font in regFonts"
           :style="{ fontFamily: font }"

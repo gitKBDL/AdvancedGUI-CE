@@ -583,7 +583,7 @@ export default defineComponent({
       ) {
         this.cacheMoveTargets(component);
       }
-      return this.moveTargetsCache;
+      return this.moveTargetsCache!;
     },
 
     startModification(

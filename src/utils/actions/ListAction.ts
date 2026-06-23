@@ -31,7 +31,7 @@ export class ListAction extends Action implements ListItemGroup<Action> {
     return this.actions;
   }
 
-  isGroup() {
+  isGroup(): this is ListItemGroup<this> {
     return true;
   }
 }

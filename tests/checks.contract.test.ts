@@ -225,7 +225,7 @@ describe("convertToFinalized: Check component with a Placeholder check (NUMBER m
         deserializeComparisonType(finalized.check.comparisonType),
       ).not.toThrow();
       expect(deserializeComparisonType(finalized.check.comparisonType)).toBe(
-        PLUGIN_COMPARISON_TYPES[ct],
+        PLUGIN_COMPARISON_TYPES[ct as number],
       );
     }
   });

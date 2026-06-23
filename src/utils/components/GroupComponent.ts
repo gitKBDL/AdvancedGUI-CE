@@ -88,7 +88,7 @@ export class GroupComponent
     );
   }
 
-  isGroup() {
+  isGroup(): this is ListItemGroup<this> {
     return true;
   }
 

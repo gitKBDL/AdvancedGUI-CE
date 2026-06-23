@@ -20,7 +20,7 @@ export const maxBoundsProps = {
     type: Number as PropType<number>,
     required: true,
   },
-};
+} as const;
 
 export const ensureBoundsWatch = {
   component: {
