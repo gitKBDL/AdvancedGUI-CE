@@ -1,4 +1,4 @@
-import { reactive, ref, watch, type WatchStopHandle } from "vue";
+import { reactive, watch, type WatchStopHandle } from "vue";
 import {
   loadProjectFromJson,
   bundleCurrentProjectData,
@@ -8,6 +8,11 @@ import { loading } from "./WorkspaceManager";
 import { componentTree } from "./WorkspaceManager";
 import { settings } from "./SettingsManager";
 import { invisibleIDs } from "./ComponentManager";
+import { unsavedChange } from "./EditorStatus";
+
+// Re-exported for the many existing importers; the source of truth lives in
+// EditorStatus to keep this module off the handler's import path.
+export { unsavedChange };
 
 export const history = reactive({
   stack: [] as Project[],
@@ -15,8 +20,6 @@ export const history = reactive({
   historyIndex: 0,
   pauseHistoryTracking: false,
 });
-
-export const unsavedChange = ref(false);
 const MAX_HISTORY = 50;
 const HISTORY_UPDATE_DEBOUNCE = 250;
 let updateTimer: number | null = null;

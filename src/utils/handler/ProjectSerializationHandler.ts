@@ -16,7 +16,7 @@ import {
   registerFontBase64,
   unregisterFont,
 } from "../manager/FontManager";
-import { unsavedChange } from "../manager/HistoryManager";
+import { unsavedChange } from "../manager/EditorStatus";
 import {
   DEFAULT_IMAGES,
   images,

@@ -43,12 +43,7 @@ import {
 } from "../utils/manager/HistoryManager";
 import { vueRef } from "../utils/VueRef";
 import { updateCurrentThumbnail } from "../utils/manager/ProjectManager";
-
-let redrawFunction: (() => void) | null = null;
-
-export function requestRedraw() {
-  if (redrawFunction) redrawFunction();
-}
+import { redrawSignal } from "../utils/manager/RenderBus";
 
 type SpacingGuide = {
   x1: number;
@@ -116,6 +111,7 @@ export default defineComponent({
       spacingGuides: [] as SpacingGuide[],
       redrawQueued: false,
       redrawRafId: null as number | null,
+      redrawSignal: vueRef(redrawSignal),
       moveTargetsCache: null as MoveTargets | null,
       hitGrid: null as Map<string, Component[]> | null,
     };
@@ -123,8 +119,6 @@ export default defineComponent({
 
   mounted() {
     this.adjustHeight();
-
-    redrawFunction = this.redraw;
 
     const canvas = (this.$refs.canvas as HTMLCanvasElement).getContext(
       "2d",
@@ -146,7 +140,6 @@ export default defineComponent({
       this.modifying = null;
       resumeHistoryTracking();
     }
-    redrawFunction = null;
     this.moveTargetsCache = null;
     this.hitGrid = null;
   },
@@ -162,6 +155,10 @@ export default defineComponent({
   },
 
   watch: {
+    redrawSignal() {
+      this.redraw();
+    },
+
     unsavedChange() {
       this.lastSnap = 0;
       this.redraw();

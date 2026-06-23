@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 import { getBase64 } from "./FontManager";
 import { RemoteImage } from "../components/RemoteImage";
-import { requestRedraw } from "@/components/Canvas.vue";
+import { requestRedraw } from "./RenderBus";
 
 export interface Image {
   name: string;
