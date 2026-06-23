@@ -1,8 +1,8 @@
 /**
  * Live-Sync client.
  *
- * Re-implements the editor side of AdvancedGUI's live-sync without any
- * dependency on the advancedgui.app cloud. The plugin runs a plain WebSocket
+ * Re-implements the editor side of AdvancedGUI's live-sync with no external
+ * cloud relay. The plugin runs a plain WebSocket
  * server on its configured `SyncSocketPort` (default 27757) and, for every text
  * message it receives, parses it with `LayoutManager.syncFromJson(json)` and
  * echoes the session key back as an ack.

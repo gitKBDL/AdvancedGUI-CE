@@ -19,7 +19,7 @@
       </div>
       <p class="lead">
         Шлёт текущий лейаут в запущенный плагин по WebSocket в реальном времени —
-        без облака advancedgui.app.
+        напрямую, без внешнего облака.
       </p>
 
       <!-- Context-aware diagnosis: the #1 reason it won't connect -->
