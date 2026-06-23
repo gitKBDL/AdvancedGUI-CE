@@ -69,7 +69,9 @@ export abstract class Component implements ListItem {
     this.resizeStartBounds = undefined;
   }
 
-  toJson(forUsage?: boolean) {
+  // Plain-object form. Containers compose children via toJsonObj() so the tree
+  // is built once as objects instead of stringify-then-parse at every level.
+  toJsonObj(forUsage?: boolean): JsonObject {
     const data: JsonObject = {
       id: this.id,
       name: this.name,
@@ -79,7 +81,11 @@ export abstract class Component implements ListItem {
 
     if (!forUsage) data.locked = this.locked;
 
-    return JSON.stringify(data);
+    return data;
+  }
+
+  toJson(forUsage?: boolean) {
+    return JSON.stringify(this.toJsonObj(forUsage));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

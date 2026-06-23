@@ -105,9 +105,7 @@ export class GroupComponent
   toDataObj(forUsage?: boolean) {
     return {
       type: this.displayName,
-      components: this.components.map((comp) =>
-        JSON.parse(comp.toJson(forUsage)),
-      ),
+      components: this.components.map((comp) => comp.toJsonObj(forUsage)),
       expanded: this.expanded,
     };
   }
