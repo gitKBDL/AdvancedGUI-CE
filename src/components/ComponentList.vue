@@ -141,6 +141,8 @@ export default defineComponent({
 
   components: { DragZone },
 
+  emits: ["update:modelValue", "deleted", "copy", "add-child"],
+
   data() {
     return {
       activeIndex: -2,

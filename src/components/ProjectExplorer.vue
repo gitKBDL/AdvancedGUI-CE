@@ -217,26 +217,7 @@
       </div>
     </div>
 
-    <div class="absInfoBar">
-      <!-- <div class="storage">
-        <div>
-          <span>{{ summedSize.toFixed(2) }} MB / 5.00 MB</span>
-          <span
-            class="material-icons"
-            @click="
-              info(
-                'This is an approximation of your browser\'s restriction on how much a website is allowed to store.'
-              )
-            "
-            >info</span
-          >
-        </div>
-        <div
-          class="remaining"
-          :style="{ width: `${Math.max(100 - (100 / 5) * summedSize, 0)}%` }"
-        ></div>
-      </div> -->
-    </div>
+    <div class="absInfoBar"></div>
 
     <input
       type="file"

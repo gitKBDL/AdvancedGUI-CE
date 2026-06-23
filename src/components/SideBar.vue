@@ -537,7 +537,7 @@ export default defineComponent({
 
       input.select();
       input.setSelectionRange(0, 99999);
-      document.execCommand("copy");
+      void navigator.clipboard?.writeText(input.value);
 
       icon.innerText = "assignment_turned_in";
 

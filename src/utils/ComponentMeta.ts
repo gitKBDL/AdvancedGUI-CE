@@ -12,7 +12,7 @@ import { Dummy } from "./components/Dummy";
 import { Text } from "./components/Text";
 import { Hover } from "./components/Hover";
 import { Image } from "./components/Image";
-import { Component, JsonConverter } from "./components/Component";
+import { Component, ComponentType, JsonConverter } from "./components/Component";
 import { List } from "./components/List";
 
 export interface ComponentMeta {
@@ -23,24 +23,8 @@ export interface ComponentMeta {
   icon: string;
 }
 
-export const componentNames = [
-  Rect.displayName,
-  Text.displayName,
-  Image.displayName,
-  RemoteImage.displayName,
-  GIF.displayName,
-  GroupComponent.displayName,
-  Hover.displayName,
-  ClickAnimation.displayName,
-  CheckComponent.displayName,
-  TextInput.displayName,
-  View.displayName,
-  Template.displayName,
-  Replica.displayName,
-  List.displayName,
-  Dummy.displayName,
-];
-
+// Untrusted JSON indexes this with arbitrary strings, so it keeps a string index
+// signature; membership is guarded at the call sites via hasComponentMeta().
 export const componentInfo: {
   [key: string]: ComponentMeta;
 } = {
@@ -60,3 +44,6 @@ export const componentInfo: {
   [List.displayName]: List,
   [Dummy.displayName]: Dummy,
 };
+
+// Derived from componentInfo so the two can never drift.
+export const componentNames = Object.keys(componentInfo) as ComponentType[];

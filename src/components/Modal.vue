@@ -27,6 +27,8 @@
 import { defineComponent } from "vue";
 import { t } from "@/utils/i18n";
 export default defineComponent({
+  emits: ["update:modelValue"],
+
   data() {
     return { t };
   },

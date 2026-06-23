@@ -8,10 +8,6 @@
       <span class="label">{{ t("command.console", "Run as console") }}</span>
       <input type="checkbox" v-model="action.asConsole" />
     </div>
-    <!-- <div class="settings-row">
-      <span class="label">Run as operator (bypass player permissions)</span>
-      <input type="checkbox" v-model="action.asOperator" />
-    </div> -->
   </div>
 </template>
 

@@ -49,6 +49,8 @@ import { regFonts, registerFont } from "../utils/manager/FontManager";
 import { t } from "@/utils/i18n";
 
 export default defineComponent({
+  emits: ["update:size", "update:font"],
+
   data() {
     return { regFonts, t };
   },
