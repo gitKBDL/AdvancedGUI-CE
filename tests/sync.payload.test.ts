@@ -134,12 +134,15 @@ describe("live-sync mixed-content guard", () => {
     expect(syncUrlBlockReason("ws://localhost:27757")).toBeNull();
   });
 
-  it("from https: blocks ws:// to non-loopback, allows loopback + wss", () => {
+  it("from https: blocks all ws:// (incl. loopback), allows only wss", () => {
     setProtocol("https:");
+    // Chromium blocks insecure ws:// from https even to localhost (mixed content).
     expect(syncUrlBlockReason("ws://192.168.1.50:27757")).not.toBeNull();
     expect(syncUrlBlockReason("ws://example.com:27757")).not.toBeNull();
-    expect(syncUrlBlockReason("ws://localhost:27757")).toBeNull();
-    expect(syncUrlBlockReason("ws://127.0.0.1:27757")).toBeNull();
+    expect(syncUrlBlockReason("ws://localhost:27757")).not.toBeNull();
+    expect(syncUrlBlockReason("ws://127.0.0.1:27757")).not.toBeNull();
+    // Loopback gets a tailored "open the editor over http://localhost" hint.
+    expect(syncUrlBlockReason("ws://localhost:27757")).toContain("http://localhost");
     expect(syncUrlBlockReason("wss://sync.example.com")).toBeNull();
   });
 });

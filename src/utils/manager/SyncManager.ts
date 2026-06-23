@@ -141,12 +141,22 @@ export function syncUrlBlockReason(url: string): string | null {
     return null;
   }
   if (url.startsWith("wss://")) return null;
+  // From an https page, browsers block insecure ws:// as mixed content. Chromium
+  // blocks it even for loopback (ws://localhost), so only wss:// is reliable;
+  // to use a plain ws:// plugin socket, the editor itself must be served over
+  // http://localhost.
   const isLoopback = /^ws:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/.test(url);
-  if (isLoopback) return null;
+  if (isLoopback) {
+    return (
+      "Редактор открыт по https, а Chromium-браузеры блокируют ws://localhost " +
+      "как mixed-content. Открой редактор по http://localhost (npm run dev) — " +
+      "тогда ws://localhost заработает."
+    );
+  }
   return (
-    "Страница загружена по https — браузер заблокирует ws:// к не-loopback " +
-    "адресу. Используй ws://localhost (плагин на этом же ПК или SSH-туннель) " +
-    "либо wss:// через свой reverse-proxy."
+    "Страница загружена по https — браузер заблокирует ws:// (mixed-content). " +
+    "Открой редактор по http://localhost, либо подключайся через wss:// " +
+    "(свой reverse-proxy)."
   );
 }
 
