@@ -319,8 +319,6 @@ export default defineComponent({
   margin-left: 6px;
   font-size: 0.8em;
   text-transform: none;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
   padding: 2px 6px;
   border-radius: 8px;
   border: 1px solid rgba(138, 148, 163, 0.25);

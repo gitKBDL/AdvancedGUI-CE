@@ -681,7 +681,6 @@ export default defineComponent({
     font-family: "Nunito", sans-serif;
     font-weight: 700;
     letter-spacing: 0.4px;
-    box-shadow: 0 10px 28px rgba(76, 195, 255, 0.28);
   }
 
   .brandText {
@@ -726,13 +725,6 @@ export default defineComponent({
     .material-icons {
       color: $light;
     }
-
-    // Signature primary action: accent glow that intensifies on hover.
-    box-shadow: 0 8px 22px rgba(76, 195, 255, 0.18);
-
-    &:hover {
-      box-shadow: 0 12px 32px rgba(76, 195, 255, 0.3);
-    }
   }
 
   .heroSecondary {
@@ -761,8 +753,6 @@ export default defineComponent({
       font-size: 1.15rem;
       font-weight: 700;
       color: $light;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
     }
 
     .label {
@@ -1071,8 +1061,6 @@ export default defineComponent({
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          font-family: var(--font-mono);
-          font-variant-numeric: tabular-nums;
         }
       }
 
