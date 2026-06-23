@@ -82,7 +82,7 @@ export default defineComponent({
         case 4:
           return ">";
         default:
-          return this.action.compType.toString();
+          return String(this.action.compType);
       }
     },
   },
