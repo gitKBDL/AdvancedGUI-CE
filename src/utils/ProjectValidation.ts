@@ -74,6 +74,13 @@ function getName(value: unknown): string | null {
   return trimmed;
 }
 
+function getMetadataGroup(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > MAX_PROJECT_NAME_LENGTH) return undefined;
+  return trimmed;
+}
+
 function getVersion(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -119,9 +126,12 @@ export function sanitizeImportedProjectData(raw: unknown): Project | null {
     return null;
   }
 
+  const metadataGroup = getMetadataGroup(raw.metadataGroup);
+
   return {
     name,
     version,
+    ...(metadataGroup ? { metadataGroup } : {}),
     width,
     height,
     invisible: sanitizeInvisibleList(raw.invisible),

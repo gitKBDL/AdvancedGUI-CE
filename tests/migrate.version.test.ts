@@ -66,7 +66,7 @@ beforeEach(() => {
 describe("UpdateManager VERSION constant", () => {
   it("exposes the current schema version as a semver-ish string", () => {
     // Pin the value so an intentional bump is a conscious, reviewed change.
-    expect(VERSION).toBe("1.0.9");
+    expect(VERSION).toBe("1.0.10");
     expect(VERSION).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });

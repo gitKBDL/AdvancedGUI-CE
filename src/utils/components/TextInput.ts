@@ -33,6 +33,7 @@ export class TextInput extends Rectangular {
     public fontColorPlaceholder: string,
     public font: string,
     public size: number,
+    public registerPlaceholder: boolean,
   ) {
     super(id, name, clickAction, x, y, width, height);
   }
@@ -75,6 +76,7 @@ export class TextInput extends Rectangular {
       fontColorPlaceholder: this.fontColorPlaceholder,
       font: this.font,
       size: this.size,
+      registerPlaceholder: this.registerPlaceholder,
     };
   }
 
@@ -97,6 +99,12 @@ export class TextInput extends Rectangular {
       jsonObj.fontColorPlaceholder,
       jsonObj.font,
       jsonObj.size,
+      // Missing in drafts saved before the field existed -> false. This matches
+      // both Jackson's absent-primitive default in the plugin's @JsonCreator and
+      // the effective behavior of every prior export (the editor never emitted
+      // the field, so the plugin always saw false). Existing projects must not
+      // silently start registering PAPI placeholders on re-export.
+      jsonObj.registerPlaceholder === true,
     );
   }
 
@@ -119,6 +127,7 @@ export class TextInput extends Rectangular {
       hexToRgba("#c4c4c4", 1),
       "VT323",
       20,
+      false,
     );
   }
 }

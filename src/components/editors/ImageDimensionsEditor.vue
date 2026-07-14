@@ -16,6 +16,19 @@
       <span class="label">{{ t("image.dithering", "Dithering") }}</span>
       <input v-model="component.dithering" type="checkbox" />
     </div>
+    <div v-if="component.dithering" class="settings-row">
+      <span class="label">
+        {{ t("image.ditheringIntensity", "Dithering intensity") }}
+      </span>
+      <input
+        v-model.number="component.ditheringIntensity"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+      />
+      <span class="intensityValue">{{ component.ditheringIntensity }}%</span>
+    </div>
   </div>
 </template>
 
@@ -31,6 +44,7 @@ type ImageDimensionsComponent = {
   height: number;
   keepImageRatio: boolean;
   dithering: boolean;
+  ditheringIntensity: number;
 };
 
 export default defineComponent({

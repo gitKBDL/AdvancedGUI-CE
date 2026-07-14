@@ -125,6 +125,29 @@ function cloneDeep<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+/**
+ * Plugin contract for ditheringIntensity (Image/Gif deserializers and
+ * RemoteImageComponent): integer, clamped to 0..100, absent == 100. Returns
+ * null when the draft carries nothing usable so callers can omit the field
+ * (keeps old-style output byte-identical when the feature is untouched).
+ */
+function normalizeIntensity(value: unknown): number | null {
+  const num =
+    typeof value === "number" ? value : Number.parseInt(String(value), 10);
+  if (!Number.isFinite(num)) return null;
+  return Math.max(0, Math.min(100, Math.round(num)));
+}
+
+/** Spreadable {ditheringIntensity} for the nested image/gifFrames nodes. */
+function ditheringIntensityField(
+  draft: JsonObject,
+): { ditheringIntensity?: number } {
+  const intensity = normalizeIntensity(draft.ditheringIntensity);
+  // 100 is the plugin default — omit it to keep exports minimal and stable.
+  if (intensity === null || intensity === 100) return {};
+  return { ditheringIntensity: intensity };
+}
+
 function createDummyComponent(id: string, suffix: string): JsonObject {
   return {
     type: "Dummy",
@@ -149,7 +172,13 @@ function finalizeViewComponent(finalized: JsonObject) {
     finalized.views = finalized.components;
     delete finalized.components;
 
-    const defaultIndex = finalized.drawIndex || 0;
+    // drawIndex can be stale (child deleted after it was set) — clamp into
+    // range instead of cloning undefined and throwing mid-export.
+    const rawIndex = finalized.drawIndex || 0;
+    const defaultIndex = Math.min(
+      Math.max(rawIndex, 0),
+      Math.max(finalized.views.length - 1, 0),
+    );
     if (finalized.views.length > 0) {
       finalized.defaultComponent = cloneDeep(finalized.views[defaultIndex]);
     } else {
@@ -206,6 +235,16 @@ function finalizeRemoteImageComponent(finalized: JsonObject) {
     finalized.loading = finalized.components[0];
   }
   if (!finalized.imageUrl) finalized.imageUrl = "";
+  // RemoteImageComponent takes ditheringIntensity as a TOP-LEVEL constructor
+  // param (nullable Integer, plugin defaults null -> 100), unlike Image/GIF
+  // where it nests inside the resource node. Normalize but keep it flat.
+  const intensity = normalizeIntensity(finalized.ditheringIntensity);
+  if (intensity !== null && intensity !== 100) {
+    finalized.ditheringIntensity = intensity;
+  } else {
+    // absent/default -> omit; the plugin's nullable Integer falls back to 100
+    delete finalized.ditheringIntensity;
+  }
   delete finalized.components;
   delete finalized.drawLoading;
   delete finalized.ratio;
@@ -218,11 +257,14 @@ function finalizeGifComponent(finalized: JsonObject) {
     width: finalized.width,
     height: finalized.height,
     dithering: finalized.dithering,
+    // GifDeserializer reads ditheringIntensity from inside the gifFrames node.
+    ...ditheringIntensityField(finalized),
   };
   delete finalized.image;
   delete finalized.width;
   delete finalized.height;
   delete finalized.dithering;
+  delete finalized.ditheringIntensity;
 }
 
 function finalizeImageComponent(finalized: JsonObject) {
@@ -232,11 +274,13 @@ function finalizeImageComponent(finalized: JsonObject) {
     width: finalized.width,
     height: finalized.height,
     dithering: finalized.dithering,
+    // ImageDeserializer reads ditheringIntensity from inside the image node.
+    ...ditheringIntensityField(finalized),
   };
   delete finalized.width;
   delete finalized.height;
   delete finalized.dithering;
-  delete finalized.keepImageRatio;
+  delete finalized.ditheringIntensity;
 }
 
 function finalizeTextComponent(finalized: JsonObject) {
@@ -280,6 +324,12 @@ function finalizeTextInputComponent(finalized: JsonObject) {
     finalized.inputHandler = finalized.maxLength;
   }
   delete finalized.maxLength;
+
+  // Absent == false for the plugin's @JsonCreator boolean; emit only an
+  // explicit true so untouched projects export byte-identically to before.
+  if (finalized.registerPlaceholder !== true) {
+    delete finalized.registerPlaceholder;
+  }
 
   normalizeFontDefinition(finalized);
 

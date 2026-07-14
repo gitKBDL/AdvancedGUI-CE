@@ -355,6 +355,7 @@ describe("Text-Input -> inputHandler + defaultInput + font", () => {
       "rgba(200,200,200,1)",
       "VT323",
       18,
+      false,
     );
     const finalized = finalizeOf(input);
     expect(finalized.defaultInput).toBe("");

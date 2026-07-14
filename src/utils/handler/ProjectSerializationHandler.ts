@@ -85,6 +85,11 @@ export function bundleCurrentProjectData(options: BundleOptions = {}) {
       t("project.unnamed", "Unnamed"),
     ),
     version: VERSION,
+    // Optional layout-level metadata group; omitted when unset so exports of
+    // projects that don't use the feature stay byte-identical.
+    ...(settings.metadataGroup.trim()
+      ? { metadataGroup: settings.metadataGroup.trim() }
+      : {}),
     invisible: [...invisibleIDs.value],
     width: settings.width,
     height: settings.height,
@@ -265,6 +270,7 @@ export async function loadProjectFromJson(
   componentTree.value = [];
 
   settings.projectName = jsonObj.name || t("project.defaultName", "Starter");
+  settings.metadataGroup = jsonObj.metadataGroup ?? "";
 
   settings.width = jsonObj.width;
   settings.height = jsonObj.height;

@@ -90,7 +90,7 @@ describe("font/image/gif leaf shapes -> plugin deserializers", () => {
     });
 
     it("preserves dithering=true through finalization", () => {
-      const img = new Image("img1", "Img", [], 5, 6, 32, 16, "Stop", false, true);
+      const img = new Image("img1", "Img", [], 5, 6, 32, 16, "Stop", false, true, 100);
       const finalized = finalize(img);
 
       expect(finalized.image).toMatchObject({ name: "Stop", dithering: true });
@@ -130,7 +130,7 @@ describe("font/image/gif leaf shapes -> plugin deserializers", () => {
     });
 
     it("is accepted by deserializeGif with integer width/height", () => {
-      const gif = new GIF("g1", "Gif", [], 0, 0, 24, 24, "spin", true, true, false);
+      const gif = new GIF("g1", "Gif", [], 0, 0, 24, 24, "spin", true, true, 100, false);
       const finalized = finalize(gif);
 
       let parsed!: ReturnType<typeof deserializeGif>;
@@ -147,7 +147,7 @@ describe("font/image/gif leaf shapes -> plugin deserializers", () => {
     });
 
     it("preserves pausedByDefault at the top level (plugin reads it outside gifFrames)", () => {
-      const pausedGif = new GIF("g2", "Gif2", [], 1, 1, 10, 10, "anim", true, false, true);
+      const pausedGif = new GIF("g2", "Gif2", [], 1, 1, 10, 10, "anim", true, false, 100, true);
       const finalized = finalize(pausedGif);
 
       expect(finalized.pausedByDefault).toBe(true);

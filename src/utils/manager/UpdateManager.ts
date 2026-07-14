@@ -13,8 +13,10 @@ import { hexToRgba } from "../ColorUtils";
 import { Rect } from "../components/Rect";
 import { Project } from "../Project";
 import { ListNextCheck } from "../checks/ListNextCheck";
+import { RemoteImage } from "../components/RemoteImage";
+import { TextInput } from "../components/TextInput";
 
-export const VERSION = "1.0.9";
+export const VERSION = "1.0.10";
 
 function traverseComponent(
   component: Component,
@@ -236,6 +238,33 @@ export function migrate(data: Project): Project {
     });
 
     oldVersion = "1.0.9";
+  }
+
+  if (oldVersion == "1.0.9") {
+    traverseComponent(data.componentTree, (comp) => {
+      // migrate() walks raw parsed JSON drafts; the Component parameter type is
+      // only nominal here (same as every step above), so widen via unknown once.
+      const node = comp as unknown as Record<string, unknown>;
+      const type = node.type;
+      // Backfill the plugin defaults so drafts carry the fields explicitly.
+      if (
+        type === Image.displayName ||
+        type === GIF.displayName ||
+        type === RemoteImage.displayName
+      ) {
+        if (node.ditheringIntensity === undefined) {
+          node.ditheringIntensity = 100;
+        }
+      }
+      if (type === TextInput.displayName) {
+        // Absent == false in every pre-1.0.10 export (Jackson primitive default).
+        if (node.registerPlaceholder === undefined) {
+          node.registerPlaceholder = false;
+        }
+      }
+    });
+
+    oldVersion = "1.0.10";
   }
 
   return data;

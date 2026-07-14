@@ -179,6 +179,12 @@ export function initializeHistoryAutoTracking() {
         scheduleHistoryUpdate();
       },
     ),
+    watch(
+      () => settings.metadataGroup,
+      () => {
+        scheduleHistoryUpdate();
+      },
+    ),
   ];
 }
 

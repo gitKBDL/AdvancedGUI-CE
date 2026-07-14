@@ -10,6 +10,17 @@ import { markRaw } from "vue";
 import { ComponentType } from "./Component";
 import { applyAspectRatioResize } from "./aspectRatioResize";
 
+/**
+ * Clamp/normalize a draft ditheringIntensity to the plugin contract: an int in
+ * 0..100, default 100 (matches ImageDeserializer/GifDeserializer, which read
+ * the node with asInt() and clamp with Math.max(0, Math.min(100, v))).
+ */
+export function normalizeDitheringIntensity(value: unknown): number {
+  const num = typeof value === "number" ? value : Number.parseInt(String(value), 10);
+  if (!Number.isFinite(num)) return 100;
+  return Math.max(0, Math.min(100, Math.round(num)));
+}
+
 export class Image extends Rectangular {
   public static displayName: ComponentType = "Image";
   public static icon = "image";
@@ -31,6 +42,7 @@ export class Image extends Rectangular {
     public image: string,
     public keepImageRatio: boolean,
     public dithering: boolean,
+    public ditheringIntensity: number,
   ) {
     super(id, name, clickAction, x, y, width, height);
     this.lastResizeWidth = width;
@@ -102,6 +114,7 @@ export class Image extends Rectangular {
       image: this.image,
       keepImageRatio: this.keepImageRatio,
       dithering: this.dithering,
+      ditheringIntensity: this.ditheringIntensity,
     };
   }
 
@@ -117,6 +130,7 @@ export class Image extends Rectangular {
       jsonObj.image,
       jsonObj.keepImageRatio,
       jsonObj.dithering,
+      normalizeDitheringIntensity(jsonObj.ditheringIntensity),
     );
   }
 
@@ -132,6 +146,7 @@ export class Image extends Rectangular {
       "Play",
       true,
       false,
+      100,
     );
   }
 }

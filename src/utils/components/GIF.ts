@@ -1,7 +1,7 @@
 import { Action } from "../actions/Action";
 import { JsonObject } from "../manager/ComponentManager";
 import { ComponentType } from "./Component";
-import { Image } from "./Image";
+import { Image, normalizeDitheringIntensity } from "./Image";
 
 export class GIF extends Image {
   public static displayName: ComponentType = "GIF";
@@ -21,6 +21,7 @@ export class GIF extends Image {
     public image: string,
     public keepImageRatio: boolean,
     public dithering: boolean,
+    public ditheringIntensity: number,
     public pausedByDefault: boolean,
   ) {
     super(
@@ -34,6 +35,7 @@ export class GIF extends Image {
       image,
       keepImageRatio,
       dithering,
+      ditheringIntensity,
     );
   }
 
@@ -56,6 +58,7 @@ export class GIF extends Image {
       jsonObj.image,
       jsonObj.keepImageRatio,
       jsonObj.dithering,
+      normalizeDitheringIntensity(jsonObj.ditheringIntensity),
       jsonObj.pausedByDefault,
     );
   }
@@ -72,6 +75,7 @@ export class GIF extends Image {
       "",
       true,
       false,
+      100,
       false,
     );
   }

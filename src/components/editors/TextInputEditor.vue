@@ -18,6 +18,12 @@
     </div>
     <div class="settings-row">
       <span class="label">{{
+        t("textInput.registerPlaceholder", "Register PAPI placeholder")
+      }}</span>
+      <input v-model="component.registerPlaceholder" type="checkbox" />
+    </div>
+    <div class="settings-row">
+      <span class="label">{{
         t("textInput.maxLength", "Max input length")
       }}</span>
       <input

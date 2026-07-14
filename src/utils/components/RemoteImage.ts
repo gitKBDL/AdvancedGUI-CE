@@ -9,6 +9,7 @@ import { settings } from "../manager/SettingsManager";
 import { devMode } from "../manager/WorkspaceManager";
 import { markRaw } from "vue";
 import { applyAspectRatioResize } from "./aspectRatioResize";
+import { normalizeDitheringIntensity } from "./Image";
 
 export class RemoteImage extends GroupComponent {
   public static displayName: ComponentType = "Remote Image";
@@ -37,6 +38,7 @@ export class RemoteImage extends GroupComponent {
     public imageUrl: string,
     public keepImageRatio: boolean,
     public dithering: boolean,
+    public ditheringIntensity: number,
     public ratio: number,
   ) {
     super(id, name, clickAction, components, expanded);
@@ -135,6 +137,7 @@ export class RemoteImage extends GroupComponent {
       jsonObj.imageUrl,
       jsonObj.keepImageRatio,
       jsonObj.dithering,
+      normalizeDitheringIntensity(jsonObj.ditheringIntensity),
       jsonObj.ratio,
     );
   }
@@ -154,6 +157,7 @@ export class RemoteImage extends GroupComponent {
       imageUrl: this.imageUrl,
       keepImageRatio: this.keepImageRatio,
       dithering: this.dithering,
+      ditheringIntensity: this.ditheringIntensity,
       ratio: this.ratio,
       ...super.toDataObj(forUsage),
     };
@@ -174,6 +178,7 @@ export class RemoteImage extends GroupComponent {
       "https://visage.surgeplay.com/head/%UUID_U%",
       true,
       false,
+      100,
       1,
     );
   }

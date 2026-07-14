@@ -449,6 +449,7 @@ describe("nested containers preserve their child tree and ids", () => {
       "https://example.test/%NAME%.png",
       true,
       false,
+      100,
       1,
     );
     const restored = componentFromJson(draft(ri)) as RemoteImage;
@@ -594,7 +595,10 @@ describe("finalized export satisfies the plugin deserializers", () => {
       width: 50,
       height: 50,
       dithering: false,
+      // default intensity: field omitted from the export, mirror yields 100
+      ditheringIntensity: 100,
     });
+    expect("ditheringIntensity" in (fin.image as object)).toBe(false);
     // width/height/dithering folded into the nested node
     expect("width" in fin).toBe(false);
     expect("height" in fin).toBe(false);

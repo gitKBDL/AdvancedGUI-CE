@@ -42,6 +42,12 @@ const translations: Record<Language, Record<string, string>> = {
     "header.unsaved":
       "Несохраненные изменения! Сохраните проект перед выходом.",
     "header.lang": "Язык",
+    "header.metadataGroup": "Группа метаданных",
+    "header.metadataGroup.hint":
+      "Layout'ы с одинаковым именем группы делят локальные метаданные в плагине. Пусто — не задано (группа = имя layout).",
+    "header.metadataGroup.none": "—",
+    "image.ditheringIntensity": "Интенсивность дизеринга",
+    "textInput.registerPlaceholder": "Регистрировать PAPI-плейсхолдер",
     "header.discard": "Выйти и не сохранять",
     "header.backToProjects": "К проектам",
     "app.unsavedLeave":

@@ -6,6 +6,13 @@ export interface GeneralSettings {
   zoom: number;
   snapEnabled: boolean;
   projectName: string;
+  /**
+   * Optional layout-level metadata group. Exported as `metadataGroup`; the
+   * plugin shares local metadata between all layouts with the same group name
+   * (Layout.metadataGroupName falls back to the layout name when absent).
+   * Empty string == not set (field omitted from the export).
+   */
+  metadataGroup: string;
   textVerticalPixelCrop: boolean;
   textHorizontalPixelAlign: boolean;
 }
@@ -16,6 +23,7 @@ export const settings = reactive({
   zoom: 2,
   snapEnabled: true,
   projectName: "Starter",
+  metadataGroup: "",
   textVerticalPixelCrop: true,
   textHorizontalPixelAlign: false,
 } as GeneralSettings);

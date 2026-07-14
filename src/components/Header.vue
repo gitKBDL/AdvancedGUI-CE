@@ -22,6 +22,23 @@
         <span class="sizeResolution"
           >({{ pixelWidth }}:{{ pixelHeight }} px)</span
         >
+        <span
+          class="label metadataGroupLabel"
+          :title="
+            t(
+              'header.metadataGroup.hint',
+              'Layouts sharing the same group name share their local metadata in the plugin. Empty = not set (group defaults to the layout name).',
+            )
+          "
+        >
+          {{ t("header.metadataGroup", "Metadata group") }}
+        </span>
+        <input
+          v-model="settings.metadataGroup"
+          class="metadataGroupInput"
+          type="text"
+          :placeholder="t('header.metadataGroup.none', '—')"
+        />
       </div>
     </div>
 

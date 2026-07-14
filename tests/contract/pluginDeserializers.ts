@@ -2,7 +2,8 @@
  * Executable spec of how the AdvancedGUI **plugin** reads the config that this
  * editor exports. Each function below is a faithful port of the corresponding
  * custom Jackson deserializer in the plugin jar
- * (me.leoko.advancedgui.utils.deserializer.*, version 3.0.3 RELEASE).
+ * (me.leoko.advancedgui.utils.deserializer.*, verified against 3.0.4-RELEASE-2;
+ * identical logic in 3.0.3).
  *
  * The point: a config the editor produces is only valid if the plugin can
  * deserialize it without throwing. By mirroring the *exact* parsing logic
@@ -182,6 +183,8 @@ export interface ImageSpec {
   width: number;
   height: number;
   dithering: boolean;
+  /** has("ditheringIntensity") ? clamp(0..100, asInt) : 100 */
+  ditheringIntensity: number;
 }
 
 function deserializeImageLike(node: unknown, ds: string): ImageSpec {
@@ -190,7 +193,13 @@ function deserializeImageLike(node: unknown, ds: string): ImageSpec {
   const width = asInt(getOrThrow(obj, "width", ds), ds);
   const height = asInt(getOrThrow(obj, "height", ds), ds);
   const dithering = "dithering" in obj ? asBoolean(obj.dithering) : false;
-  return { name, width, height, dithering };
+  // Java: has("ditheringIntensity") ? max(0, min(100, asInt())) : 100.
+  // asInt() on a non-int node is a hard error for the editor contract.
+  const ditheringIntensity =
+    "ditheringIntensity" in obj && obj.ditheringIntensity !== null
+      ? Math.max(0, Math.min(100, asInt(obj.ditheringIntensity, ds)))
+      : 100;
+  return { name, width, height, dithering, ditheringIntensity };
 }
 
 export function deserializeImage(node: unknown): ImageSpec {
